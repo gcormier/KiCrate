@@ -139,7 +139,7 @@ def board(enc: Enclosure, mount: PcbMount) -> list:
     for n, k in enumerate(mount.keepouts, 1):
         poly = keepout_polygon(k, board_poly)
         if k.max_height is None:
-            tree.append(_rule_area(f"keepout_{n}", k.side, poly, ids))
+            tree.append(_rule_area(k.reason or f"keepout_{n}", k.side, poly, ids))
         else:
             tree += _segments([Line(poly[i - 1], poly[i]) for i in range(len(poly))], "Dwgs.User", 0.1, ids)
             cx = sum(p[0] for p in poly) / len(poly)

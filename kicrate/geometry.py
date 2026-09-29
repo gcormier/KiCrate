@@ -61,18 +61,39 @@ def outline_vertices(outline: RectOutline | PolygonOutline) -> list[tuple[Pt, fl
     r = outline.corner_radius
     n = outline.corner_notches
     verts: list[tuple[Pt, float]] = []
-    # Corners in CCW order starting bottom-right; (sx, sy) is the corner's quadrant.
-    for sx, sy in ((1, -1), (1, 1), (-1, 1), (-1, -1)):
+    # Corners in CCW order starting bottom-right, each followed by the edge leaving it.
+    for (sx, sy), edge in zip(((1, -1), (1, 1), (-1, 1), (-1, -1)), ("x_max", "y_max", "x_min", "y_min")):
         if not n:
             verts.append(((sx * w, sy * h), r))
-            continue
-        nx, ny = n.size
-        a = ((sx * w, sy * (h - ny)), r)  # on the X-facing edge
-        b = ((sx * (w - nx), sy * (h - ny)), n.inner_radius)
-        c = ((sx * (w - nx), sy * h), n.outer_radius)  # on the Y-facing edge
-        # Walking CCW, quadrants (1,-1) and (-1,1) meet the Y-facing edge first.
-        verts.extend([c, b, a] if sx * sy < 0 else [a, b, c])
+        else:
+            nx, ny = n.size
+            a = ((sx * w, sy * (h - ny)), r)  # on the X-facing edge
+            b = ((sx * (w - nx), sy * (h - ny)), n.inner_radius)
+            c = ((sx * (w - nx), sy * h), n.outer_radius)  # on the Y-facing edge
+            # Walking CCW, quadrants (1,-1) and (-1,1) meet the Y-facing edge first.
+            verts.extend([c, b, a] if sx * sy < 0 else [a, b, c])
+        verts.extend(_edge_notch_vertices(outline, edge, w, h))
     return verts
+
+
+# For each edge: (fixed axis value sign, travel direction along the free axis, free axis index)
+_EDGES = {"x_max": (1, 1, 1), "y_max": (1, -1, 0), "x_min": (-1, -1, 1), "y_min": (-1, 1, 0)}
+
+
+def _edge_notch_vertices(outline: RectOutline, edge: str, w: float, h: float) -> list[tuple[Pt, float]]:
+    side, travel, free = _EDGES[edge]
+    fixed = side * (w if free == 1 else h)
+    out: list[tuple[Pt, float]] = []
+    for en in sorted((e for e in outline.edge_notches if e.edge == edge), key=lambda e: travel * e.at):
+        inner = fixed - side * en.depth
+        for along, across, rad in (
+            (en.at - travel * en.width / 2, fixed, en.outer_radius),
+            (en.at - travel * en.width / 2, inner, en.inner_radius),
+            (en.at + travel * en.width / 2, inner, en.inner_radius),
+            (en.at + travel * en.width / 2, fixed, en.outer_radius),
+        ):
+            out.append(((across, along) if free == 1 else (along, across), rad))
+    return out
 
 
 def fillet_path(verts: list[tuple[Pt, float]]) -> list[Segment]:

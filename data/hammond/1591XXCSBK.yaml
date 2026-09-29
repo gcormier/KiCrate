@@ -35,7 +35,7 @@ pcb_mounts:
       size: [114.5, 60.5]
       corner_notches:
         size: [7.75, 8.0]
-        outer_radius: 3.5
+        inner_radius: 3.5
     hole_pattern:
       pitch: [84.5, 39.5]
       drill: 3.5
@@ -43,5 +43,5 @@ pcb_mounts:
       screw: '#4 x 1/4" self-tapping'
     z: 4.5
     notes:
-      - Notch size derived from 99.00 / 44.50 edge lengths on the drawing.
+      - Outline and holes cross-checked against the manufacturer DWG (1:1, mm).
       - Box posts are 4.50 above the floor; lid posts also accept #4 x 1/4".

@@ -39,6 +39,59 @@
       "title": "Box3",
       "type": "object"
     },
+    "EdgeNotch": {
+      "additionalProperties": false,
+      "description": "Rectangular notch cut into one board edge (e.g. to clear a lid-screw boss).",
+      "properties": {
+        "edge": {
+          "enum": [
+            "x_min",
+            "x_max",
+            "y_min",
+            "y_max"
+          ],
+          "title": "Edge",
+          "type": "string"
+        },
+        "at": {
+          "description": "Notch centre along the edge (X for y_* edges, Y for x_* edges)",
+          "title": "At",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "depth": {
+          "exclusiveMinimum": 0,
+          "title": "Depth",
+          "type": "number"
+        },
+        "outer_radius": {
+          "default": 0,
+          "description": "Fillet where the notch meets the board edge",
+          "minimum": 0,
+          "title": "Outer Radius",
+          "type": "number"
+        },
+        "inner_radius": {
+          "default": 0,
+          "description": "Fillet on the notch's inside corners",
+          "minimum": 0,
+          "title": "Inner Radius",
+          "type": "number"
+        }
+      },
+      "required": [
+        "edge",
+        "at",
+        "width",
+        "depth"
+      ],
+      "title": "EdgeNotch",
+      "type": "object"
+    },
     "Hole": {
       "additionalProperties": false,
       "properties": {
@@ -799,6 +852,13 @@
             }
           ],
           "default": null
+        },
+        "edge_notches": {
+          "items": {
+            "$ref": "#/$defs/EdgeNotch"
+          },
+          "title": "Edge Notches",
+          "type": "array"
         }
       },
       "required": [

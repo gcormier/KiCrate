@@ -43,11 +43,23 @@ class Notches(Model):
     inner_radius: float = Field(0, ge=0, description="Fillet on the notch's concave (inside) corner")
 
 
+class EdgeNotch(Model):
+    """Rectangular notch cut into one board edge (e.g. to clear a lid-screw boss)."""
+
+    edge: Literal["x_min", "x_max", "y_min", "y_max"]
+    at: float = Field(description="Notch centre along the edge (X for y_* edges, Y for x_* edges)")
+    width: Pos
+    depth: Pos
+    outer_radius: float = Field(0, ge=0, description="Fillet where the notch meets the board edge")
+    inner_radius: float = Field(0, ge=0, description="Fillet on the notch's inside corners")
+
+
 class RectOutline(Model):
     shape: Literal["rect"] = "rect"
     size: tuple[Pos, Pos]
     corner_radius: float = Field(0, ge=0)
     corner_notches: Notches | None = None
+    edge_notches: list[EdgeNotch] = Field(default_factory=list)
 
 
 class PolygonOutline(Model):
