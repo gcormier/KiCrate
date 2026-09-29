@@ -1,0 +1,1061 @@
+{
+  "$defs": {
+    "Box3": {
+      "additionalProperties": false,
+      "properties": {
+        "length": {
+          "exclusiveMinimum": 0,
+          "title": "Length",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "length",
+        "width",
+        "height"
+      ],
+      "title": "Box3",
+      "type": "object"
+    },
+    "Hole": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "At",
+          "type": "array"
+        },
+        "drill": {
+          "exclusiveMinimum": 0,
+          "title": "Drill",
+          "type": "number"
+        },
+        "boss_diameter": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Standoff/boss the board rests on (bottom-side keepout)",
+          "title": "Boss Diameter"
+        },
+        "head_diameter": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Screw head (top-side keepout)",
+          "title": "Head Diameter"
+        },
+        "screw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Intended fastener as the manufacturer states it, e.g. \"#4 x 1/4 self-tapping\"",
+          "title": "Screw"
+        },
+        "footprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Override, e.g. \"MountingHole:MountingHole_3.2mm_M3\"",
+          "title": "Footprint"
+        },
+        "plated": {
+          "default": false,
+          "title": "Plated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "at",
+        "drill"
+      ],
+      "title": "Hole",
+      "type": "object"
+    },
+    "HolePattern": {
+      "additionalProperties": false,
+      "description": "Rectangular pattern of four holes centred on the board.",
+      "properties": {
+        "pitch": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            }
+          ],
+          "title": "Pitch",
+          "type": "array"
+        },
+        "center": {
+          "default": [
+            0.0,
+            0.0
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Center",
+          "type": "array"
+        },
+        "drill": {
+          "exclusiveMinimum": 0,
+          "title": "Drill",
+          "type": "number"
+        },
+        "boss_diameter": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Boss Diameter"
+        },
+        "head_diameter": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Head Diameter"
+        },
+        "screw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screw"
+        },
+        "footprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Footprint"
+        },
+        "plated": {
+          "default": false,
+          "title": "Plated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "pitch",
+        "drill"
+      ],
+      "title": "HolePattern",
+      "type": "object"
+    },
+    "Keepout": {
+      "additionalProperties": false,
+      "description": "Area where components must not be placed on the given side(s).",
+      "properties": {
+        "side": {
+          "default": "both",
+          "enum": [
+            "top",
+            "bottom",
+            "both"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "rect": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "x_min, y_min, x_max, y_max",
+          "title": "Rect"
+        },
+        "circle": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "x, y, diameter",
+          "title": "Circle"
+        },
+        "edge": {
+          "anyOf": [
+            {
+              "enum": [
+                "x_min",
+                "x_max",
+                "y_min",
+                "y_max"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Band along a board edge",
+          "title": "Edge"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Band width for `edge`",
+          "title": "Width"
+        },
+        "max_height": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Components allowed up to this height instead of none",
+          "title": "Max Height"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "title": "Keepout",
+      "type": "object"
+    },
+    "Notches": {
+      "additionalProperties": false,
+      "description": "Rectangular notch cut from each of the four board corners.",
+      "properties": {
+        "size": {
+          "description": "Notch extent along X and Y",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "outer_radius": {
+          "default": 0,
+          "description": "Fillet on the notch's convex corners (the ones on the board edge)",
+          "minimum": 0,
+          "title": "Outer Radius",
+          "type": "number"
+        },
+        "inner_radius": {
+          "default": 0,
+          "description": "Fillet on the notch's concave (inside) corner",
+          "minimum": 0,
+          "title": "Inner Radius",
+          "type": "number"
+        }
+      },
+      "required": [
+        "size"
+      ],
+      "title": "Notches",
+      "type": "object"
+    },
+    "Panel": {
+      "additionalProperties": false,
+      "description": "A removable face. Coordinates: origin at panel centre, viewed from outside.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9_-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "faces": {
+          "items": {
+            "enum": [
+              "front",
+              "back",
+              "left",
+              "right",
+              "top",
+              "bottom"
+            ],
+            "type": "string"
+          },
+          "title": "Faces",
+          "type": "array"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material"
+        },
+        "thickness": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Thickness"
+        },
+        "outline": {
+          "discriminator": {
+            "mapping": {
+              "polygon": "#/$defs/PolygonOutline",
+              "rect": "#/$defs/RectOutline"
+            },
+            "propertyName": "shape"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RectOutline"
+            },
+            {
+              "$ref": "#/$defs/PolygonOutline"
+            }
+          ],
+          "title": "Outline"
+        },
+        "holes": {
+          "items": {
+            "$ref": "#/$defs/PanelHole"
+          },
+          "title": "Holes",
+          "type": "array"
+        },
+        "usable_area": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Visible/cuttable area (e.g. bezel opening), centred",
+          "title": "Usable Area"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "faces",
+        "outline"
+      ],
+      "title": "Panel",
+      "type": "object"
+    },
+    "PanelHole": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "At",
+          "type": "array"
+        },
+        "drill": {
+          "exclusiveMinimum": 0,
+          "title": "Drill",
+          "type": "number"
+        },
+        "countersink": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "diameter, angle in degrees",
+          "title": "Countersink"
+        },
+        "screw": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screw"
+        }
+      },
+      "required": [
+        "at",
+        "drill"
+      ],
+      "title": "PanelHole",
+      "type": "object"
+    },
+    "PcbMount": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9_-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "bosses",
+            "card_guide_slots",
+            "floor",
+            "lid"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "outline": {
+          "discriminator": {
+            "mapping": {
+              "polygon": "#/$defs/PolygonOutline",
+              "rect": "#/$defs/RectOutline"
+            },
+            "propertyName": "shape"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RectOutline"
+            },
+            {
+              "$ref": "#/$defs/PolygonOutline"
+            }
+          ],
+          "title": "Outline"
+        },
+        "holes": {
+          "items": {
+            "$ref": "#/$defs/Hole"
+          },
+          "title": "Holes",
+          "type": "array"
+        },
+        "hole_pattern": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HolePattern"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "keepouts": {
+          "items": {
+            "$ref": "#/$defs/Keepout"
+          },
+          "title": "Keepouts",
+          "type": "array"
+        },
+        "slots": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Slots"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "z": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Board bottom height above the inside floor",
+          "title": "Z"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "outline"
+      ],
+      "title": "PcbMount",
+      "type": "object"
+    },
+    "PolygonOutline": {
+      "additionalProperties": false,
+      "properties": {
+        "shape": {
+          "const": "polygon",
+          "default": "polygon",
+          "title": "Shape",
+          "type": "string"
+        },
+        "points": {
+          "description": "[x, y] or [x, y, fillet_radius], counter-clockwise",
+          "items": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              }
+            ]
+          },
+          "minItems": 3,
+          "title": "Points",
+          "type": "array"
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "title": "PolygonOutline",
+      "type": "object"
+    },
+    "RectOutline": {
+      "additionalProperties": false,
+      "properties": {
+        "shape": {
+          "const": "rect",
+          "default": "rect",
+          "title": "Shape",
+          "type": "string"
+        },
+        "size": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "corner_radius": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Corner Radius",
+          "type": "number"
+        },
+        "corner_notches": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Notches"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "size"
+      ],
+      "title": "RectOutline",
+      "type": "object"
+    },
+    "Slots": {
+      "additionalProperties": false,
+      "description": "Card-guide slots the board slides into (board edges along X).",
+      "properties": {
+        "slot_width": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot Width"
+        },
+        "pcb_thickness": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                },
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "min, max board thickness",
+          "title": "Pcb Thickness"
+        },
+        "levels": {
+          "description": "Board bottom height above the inside floor, per slot level",
+          "items": {
+            "type": "number"
+          },
+          "title": "Levels",
+          "type": "array"
+        }
+      },
+      "title": "Slots",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "kind": {
+          "default": "drawing",
+          "enum": [
+            "drawing",
+            "product_page",
+            "series_page",
+            "cad",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        },
+        "retrieved": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Retrieved"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "title": "Source",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "mfr": {
+      "pattern": "^[a-z0-9-]+$",
+      "title": "Mfr",
+      "type": "string"
+    },
+    "part": {
+      "title": "Part",
+      "type": "string"
+    },
+    "variants": {
+      "description": "Orderable part numbers sharing this geometry",
+      "items": {
+        "type": "string"
+      },
+      "title": "Variants",
+      "type": "array"
+    },
+    "series": {
+      "title": "Series",
+      "type": "string"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Url"
+    },
+    "material": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Material"
+    },
+    "provenance": {
+      "enum": [
+        "scraped",
+        "manual",
+        "assisted"
+      ],
+      "title": "Provenance",
+      "type": "string"
+    },
+    "verified": {
+      "default": false,
+      "title": "Verified",
+      "type": "boolean"
+    },
+    "last_checked": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Checked"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "outer": {
+      "$ref": "#/$defs/Box3"
+    },
+    "inner": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Box3"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "pcb_mounts": {
+      "items": {
+        "$ref": "#/$defs/PcbMount"
+      },
+      "title": "Pcb Mounts",
+      "type": "array"
+    },
+    "panels": {
+      "items": {
+        "$ref": "#/$defs/Panel"
+      },
+      "title": "Panels",
+      "type": "array"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "mfr",
+    "part",
+    "series",
+    "provenance",
+    "outer"
+  ],
+  "title": "Enclosure",
+  "type": "object"
+}

@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: kicad/kicad:10.0
+      options: --user root
+    env:
+      UV_LINK_MODE: copy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - name: Validate data
+        run: uv run kicrate validate
+      - name: Check JSON Schema is current
+        run: |
+          uv run kicrate schema
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git diff --exit-code schema/
+      - name: Tests (includes KiCad load + DRC)
+        run: uv run pytest -q
+      - name: Build
+        run: uv run kicrate build --out build
+      - name: KiCad DRC on generated boards
+        run: uv run kicrate drc --out build
+      - name: Render previews
+        run: |
+          find build -name '*.kicad_pcb' | while read -r f; do
+            kicad-cli pcb export svg --mode-single --fit-page-to-board --exclude-drawing-sheet \
+              --layers Edge.Cuts,Dwgs.User,Cmts.User,B.Cu,F.Fab -o "${f%.kicad_pcb}.svg" "$f"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kicrate-build
+          path: build/

@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1591XXCSBK
+series: 1591XX
+description: ABS multi-purpose enclosure with PCB standoffs, self-tapping cover screws
+url: https://www.hammfg.com/part/1591XXCSBK
+material: ABS (UL94-HB)
+provenance: manual
+verified: false
+last_checked: 2026-09-29
+sources:
+  - url: https://www.hammfg.com/files/parts/pdf/1591XXCSBK.pdf
+    kind: drawing
+    sha256: e4d12f88f9094673a43149fe5e320b4129692b06f588cf968a3e19a81f55308d
+    retrieved: 2026-09-29
+  - url: https://www.hammfg.com/part/1591XXCSBK
+    kind: product_page
+    retrieved: 2026-09-29
+outer:
+  length: 121.44
+  width: 66.94
+  height: 40.0
+  note: Box 37.25 high; lid 6.50 high; 40.00 assembled (end view).
+inner:
+  length: 115.15
+  width: 60.65
+  height: 36.0
+  note: Measured at the rim; walls have draft.
+pcb_mounts:
+  - id: standoffs
+    type: bosses
+    description: Max-size PCB from drawing. Fits the box floor posts or the lid posts.
+    outline:
+      shape: rect
+      size: [114.5, 60.5]
+      corner_notches:
+        size: [7.75, 8.0]
+        outer_radius: 3.5
+    hole_pattern:
+      pitch: [84.5, 39.5]
+      drill: 3.5
+      boss_diameter: 5.0
+      screw: '#4 x 1/4" self-tapping'
+    z: 4.5
+    notes:
+      - Notch size derived from 99.00 / 44.50 edge lengths on the drawing.
+      - Box posts are 4.50 above the floor; lid posts also accept #4 x 1/4".
