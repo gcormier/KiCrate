@@ -514,6 +514,7 @@
         "outline": {
           "discriminator": {
             "mapping": {
+              "path": "#/$defs/PathOutline",
               "polygon": "#/$defs/PolygonOutline",
               "rect": "#/$defs/RectOutline"
             },
@@ -525,6 +526,9 @@
             },
             {
               "$ref": "#/$defs/PolygonOutline"
+            },
+            {
+              "$ref": "#/$defs/PathOutline"
             }
           ],
           "title": "Outline"
@@ -560,6 +564,19 @@
           "default": null,
           "description": "Visible/cuttable area (e.g. bezel opening), centred",
           "title": "Usable Area"
+        },
+        "floor_y": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Y of the inside floor in panel coordinates (locates PCB levels)",
+          "title": "Floor Y"
         },
         "notes": {
           "items": {
@@ -643,6 +660,64 @@
       "title": "PanelHole",
       "type": "object"
     },
+    "PathOutline": {
+      "additionalProperties": false,
+      "description": "Closed path of lines and arcs, as extracted from CAD. Each node ends a segment\nthat starts at the previous node (the last node closes back to the first):\n[x, y] is a straight line, [x, y, mid_x, mid_y] an arc through the mid point.",
+      "properties": {
+        "shape": {
+          "const": "path",
+          "default": "path",
+          "title": "Shape",
+          "type": "string"
+        },
+        "nodes": {
+          "items": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 4,
+                "minItems": 4,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              }
+            ]
+          },
+          "minItems": 2,
+          "title": "Nodes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "nodes"
+      ],
+      "title": "PathOutline",
+      "type": "object"
+    },
     "PcbMount": {
       "additionalProperties": false,
       "properties": {
@@ -676,6 +751,7 @@
         "outline": {
           "discriminator": {
             "mapping": {
+              "path": "#/$defs/PathOutline",
               "polygon": "#/$defs/PolygonOutline",
               "rect": "#/$defs/RectOutline"
             },
@@ -687,6 +763,9 @@
             },
             {
               "$ref": "#/$defs/PolygonOutline"
+            },
+            {
+              "$ref": "#/$defs/PathOutline"
             }
           ],
           "title": "Outline"

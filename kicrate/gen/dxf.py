@@ -8,7 +8,7 @@ import ezdxf
 from ezdxf import units
 
 from ..geometry import Arc, Line, flatten, keepout_polygon, outline_path
-from ..schema import Enclosure, PcbMount
+from ..schema import Enclosure, Panel, PcbMount
 
 LAYERS = {
     "OUTLINE": 7,  # white/black
@@ -17,6 +17,9 @@ LAYERS = {
     "KEEPOUT_BOTTOM": 5,  # blue
     "ENCLOSURE": 8,  # grey
     "NOTES": 2,  # yellow
+    "COUNTERSINK": 6,  # magenta
+    "USABLE_AREA": 4,  # cyan
+    "PCB_LEVELS": 30,  # orange
 }
 
 
@@ -32,13 +35,17 @@ def _add_segments(msp, segs, layer: str) -> None:
             msp.add_arc(s.center, s.radius, a0, a1, dxfattribs={"layer": layer})
 
 
-def document(enc: Enclosure, mount: PcbMount) -> ezdxf.document.Drawing:
+def _new():
     doc = ezdxf.new("R2010", setup=True)
     doc.units = units.MM
     doc.header["$MEASUREMENT"] = 1
     for name, color in LAYERS.items():
         doc.layers.add(name, color=color)
-    msp = doc.modelspace()
+    return doc, doc.modelspace()
+
+
+def document(enc: Enclosure, mount: PcbMount) -> ezdxf.document.Drawing:
+    doc, msp = _new()
 
     segs = outline_path(mount.outline)
     _add_segments(msp, segs, "OUTLINE")
@@ -68,5 +75,30 @@ def document(enc: Enclosure, mount: PcbMount) -> ezdxf.document.Drawing:
     return doc
 
 
+def panel_document(enc: Enclosure, panel: Panel) -> ezdxf.document.Drawing:
+    doc, msp = _new()
+    segs = outline_path(panel.outline)
+    _add_segments(msp, segs, "OUTLINE")
+    poly = flatten(segs)
+    for h in panel.holes:
+        msp.add_circle(h.at, h.drill / 2, dxfattribs={"layer": "HOLES"})
+        if h.countersink:
+            msp.add_circle(h.at, h.countersink[0] / 2, dxfattribs={"layer": "COUNTERSINK"})
+    if panel.usable_area:
+        w, hh = panel.usable_area[0] / 2, panel.usable_area[1] / 2
+        msp.add_lwpolyline([(-w, -hh), (w, -hh), (w, hh), (-w, hh)], close=True, dxfattribs={"layer": "USABLE_AREA"})
+    x0, x1 = min(p[0] for p in poly), max(p[0] for p in poly)
+    for label, y in enc.pcb_levels(panel):
+        msp.add_line((x0, y), (x1, y), dxfattribs={"layer": "PCB_LEVELS"})
+        msp.add_text(label, height=0.8, dxfattribs={"layer": "PCB_LEVELS"}).set_placement((x1 + 1, y))
+    label = f"{enc.mfr.title()} {enc.part} / panel {panel.id} ({'verified' if enc.verified else 'UNVERIFIED'})"
+    msp.add_text(label, height=2.0, dxfattribs={"layer": "NOTES"}).set_placement((x0, max(p[1] for p in poly) + 4))
+    return doc
+
+
 def write(enc: Enclosure, mount: PcbMount, path) -> None:
     document(enc, mount).saveas(path)
+
+
+def write_panel(enc: Enclosure, panel: Panel, path) -> None:
+    panel_document(enc, panel).saveas(path)

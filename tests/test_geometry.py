@@ -83,3 +83,16 @@ def test_edge_notches():
             assert not point_in_polygon((x, y), poly)
     assert point_in_polygon((0, 24), poly)
     assert all(not a.ccw for a in segs if isinstance(a, Arc))
+
+
+def test_path_outline_normalised_ccw():
+    from kicrate.schema import PathOutline
+
+    # Clockwise 10x10 square with one rounded corner given as an arc through its midpoint.
+    m = 8 + 2 * math.cos(math.radians(45))
+    cw = PathOutline(nodes=[(0, 0), (0, 10), (8, 10), (10, 8, m, m), (10, 0)])
+    segs = outline_path(cw)
+    _closed(segs)
+    arcs = [s for s in segs if isinstance(s, Arc)]
+    assert len(arcs) == 1 and arcs[0].ccw and arcs[0].radius == pytest.approx(2)
+    assert _area(flatten(segs, step_deg=0.5)) == pytest.approx(100 - (4 - math.pi), rel=1e-4)

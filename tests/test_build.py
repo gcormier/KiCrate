@@ -63,3 +63,41 @@ def test_kicad_loads_and_passes_drc(enc, mount, tmp_path):
         capture_output=True, text=True,
     )
     assert r.returncode == 0, r.stdout + r.stderr + (tmp_path / "drc.rpt").read_text()
+
+
+PANELS = [(e, p) for e in ENCS for p in e.panels]
+PANEL_IDS = [f"{e.part}-{p.id}" for e, p in PANELS]
+
+
+@pytest.mark.parametrize("enc,panel", PANELS, ids=PANEL_IDS)
+def test_panel_outputs(enc, panel, tmp_path):
+    tree = sexpr.loads(sexpr.dumps(kicad_pcb.panel_board(enc, panel)))
+    assert len(sexpr.find_all(tree, "footprint")) == len(panel.holes)
+    p = tmp_path / "p.dxf"
+    dxf.write_panel(enc, panel, p)
+    msp = ezdxf.readfile(p).modelspace()
+    assert len(msp.query("CIRCLE[layer=='HOLES']")) == len(panel.holes)
+    assert len(msp.query("LINE[layer=='PCB_LEVELS']")) == len(enc.pcb_levels(panel))
+
+
+@pytest.mark.parametrize("enc,mount", MOUNTS, ids=IDS)
+def test_svg_is_true_scale(enc, mount):
+    import re
+    from kicrate.gen import svg
+
+    doc = svg.mount_svg(enc, mount)
+    w = float(re.search(r'width="([\d.]+)mm"', doc).group(1))
+    vb_w = float(re.search(r'viewBox="[-\d.]+ [-\d.]+ ([\d.]+)', doc).group(1))
+    assert w == pytest.approx(vb_w, abs=0.01)  # 1 user unit == 1 mm
+
+
+@pytest.mark.skipif(not shutil.which("kicad-cli"), reason="kicad-cli not installed")
+@pytest.mark.parametrize("enc,panel", PANELS, ids=PANEL_IDS)
+def test_kicad_loads_panel(enc, panel, tmp_path):
+    pcb = tmp_path / "p.kicad_pcb"
+    kicad_pcb.write_panel(enc, panel, pcb)
+    r = subprocess.run(
+        ["kicad-cli", "pcb", "drc", "--severity-error", "--exit-code-violations", "-o", str(tmp_path / "drc.rpt"), str(pcb)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr + (tmp_path / "drc.rpt").read_text()

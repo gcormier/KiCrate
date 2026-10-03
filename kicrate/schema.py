@@ -69,7 +69,16 @@ class PolygonOutline(Model):
     )
 
 
-Outline = Annotated[Union[RectOutline, PolygonOutline], Field(discriminator="shape")]
+class PathOutline(Model):
+    """Closed path of lines and arcs, as extracted from CAD. Each node ends a segment
+    that starts at the previous node (the last node closes back to the first):
+    [x, y] is a straight line, [x, y, mid_x, mid_y] an arc through the mid point."""
+
+    shape: Literal["path"] = "path"
+    nodes: list[tuple[float, float] | tuple[float, float, float, float]] = Field(min_length=2)
+
+
+Outline = Annotated[Union[RectOutline, PolygonOutline, PathOutline], Field(discriminator="shape")]
 
 
 class Hole(Model):
@@ -163,6 +172,7 @@ class Panel(Model):
     outline: Outline
     holes: list[PanelHole] = Field(default_factory=list)
     usable_area: tuple[Pos, Pos] | None = Field(None, description="Visible/cuttable area (e.g. bezel opening), centred")
+    floor_y: float | None = Field(None, description="Y of the inside floor in panel coordinates (locates PCB levels)")
     notes: list[str] = Field(default_factory=list)
 
 
@@ -192,6 +202,18 @@ class Enclosure(Model):
             if len(ids) != len(set(ids)):
                 raise ValueError(f"duplicate {kind} id")
         return self
+
+    def pcb_levels(self, panel: Panel) -> list[tuple[str, float]]:
+        """(label, y) of each PCB bottom face in the panel's coordinates."""
+        if panel.floor_y is None:
+            return []
+        out = []
+        for m in self.pcb_mounts:
+            if m.z is not None:
+                out.append((f"PCB bottom ({m.id})", panel.floor_y + m.z))
+            if m.slots:
+                out += [(f"slot {i}", panel.floor_y + z) for i, z in enumerate(m.slots.levels, 1)]
+        return out
 
     @property
     def key(self) -> str:

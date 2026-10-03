@@ -62,6 +62,7 @@ panels:
       - {at: [47.498, 22.733], drill: 4.19, countersink: [5.842, 82], screw: '#6 Taptight'}
       - {at: [-47.498, 22.733], drill: 4.19, countersink: [5.842, 82], screw: '#6 Taptight'}
     usable_area: [97.1, 48.7]
+    floor_y: -24.85
     notes:
       - usable_area is the plastic bezel opening.
-      - Panel is centred on the extrusion; the inside floor is 24.85 below panel centre.
+      - Panel is centred on the extrusion (inside floor 24.85 below centre, per DWG).

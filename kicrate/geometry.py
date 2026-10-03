@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .schema import Keepout, PolygonOutline, RectOutline
+from .schema import Keepout, PathOutline, PolygonOutline, RectOutline
 
 Pt = tuple[float, float]
 
@@ -129,7 +129,43 @@ def fillet_path(verts: list[tuple[Pt, float]]) -> list[Segment]:
     return segs
 
 
-def outline_path(outline: RectOutline | PolygonOutline) -> list[Segment]:
+def arc_through(start: Pt, mid: Pt, end: Pt) -> Arc:
+    """Arc defined by three points on it."""
+    (ax, ay), (bx, by), (cx, cy) = start, mid, end
+    d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+    if abs(d) < 1e-12:
+        raise ValueError(f"arc points are collinear: {start} {mid} {end}")
+    ux = ((ax**2 + ay**2) * (by - cy) + (bx**2 + by**2) * (cy - ay) + (cx**2 + cy**2) * (ay - by)) / d
+    uy = ((ax**2 + ay**2) * (cx - bx) + (bx**2 + by**2) * (ax - cx) + (cx**2 + cy**2) * (bx - ax)) / d
+    return Arc(start, mid, end, (ux, uy), math.dist((ux, uy), start))
+
+
+def reverse(s: Segment) -> Segment:
+    if isinstance(s, Line):
+        return Line(s.end, s.start)
+    return Arc(s.end, s.mid, s.start, s.center, s.radius)
+
+
+def _path_segments(outline: PathOutline) -> list[Segment]:
+    segs: list[Segment] = []
+    nodes = outline.nodes
+    for i, n in enumerate(nodes):
+        prev = nodes[i - 1]
+        start, end = (prev[0], prev[1]), (n[0], n[1])
+        if len(n) == 4:
+            segs.append(arc_through(start, (n[2], n[3]), end))
+        elif math.dist(start, end) > 1e-9:
+            segs.append(Line(start, end))
+    return segs
+
+
+def outline_path(outline: RectOutline | PolygonOutline | PathOutline) -> list[Segment]:
+    if isinstance(outline, PathOutline):
+        segs = _path_segments(outline)
+        poly = flatten(segs)
+        if sum(poly[i - 1][0] * poly[i][1] - poly[i][0] * poly[i - 1][1] for i in range(len(poly))) < 0:
+            segs = [reverse(s) for s in reversed(segs)]  # normalise to counter-clockwise
+        return segs
     return fillet_path(outline_vertices(outline))
 
 
