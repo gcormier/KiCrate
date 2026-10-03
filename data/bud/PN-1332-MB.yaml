@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: PN-1332-MB
+variants:
+- PN-1332-CMB
+- PN-1332-DGMB
+series: PN
+url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1332-mb/
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1332-mb/
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hbpn1332.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hbpn1332.dxf
+  kind: cad
+  sha256: 04b26c7395e1285d462fe8338887640733007dc63d73afa94333176fd3e07f1e
+  retrieved: '2026-10-03'
+outer:
+  length: 160.02
+  width: 80.01
+  height: 55.118
+  note: Converted from inches.
+inner:
+  length: 152.908
+  width: 72.898
+  height: 49.276
+  note: Converted from inches.
+notes:
+- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'

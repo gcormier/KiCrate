@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: PN-1324
+variants:
+- PN-1324-C
+- PN-1324-DG
+series: PN
+url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1324/
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1324/
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb1324.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb1324.dxf
+  kind: cad
+  sha256: bb8da6e32845c0af0a9e94dead65cc8d6ccf258de3d9d61d3cd75d54800fe581
+  retrieved: '2026-10-03'
+outer:
+  length: 170.942
+  width: 120.904
+  height: 55.118
+  note: Converted from inches.
+inner:
+  length: 161.29
+  width: 111.252
+  height: 49.022
+  note: Converted from inches.
+notes:
+- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'

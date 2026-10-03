@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: PN-1327-MB
+variants:
+- PN-1327-CMB
+- PN-1327-DGMB
+series: PN
+url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1327-mb/
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1327-mb/
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb1327mb.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb1327mb.dxf
+  kind: cad
+  sha256: 580748c8508a2194943c0daaa75280379647103395b99222c914271c77057f24
+  retrieved: '2026-10-03'
+outer:
+  length: 170.942
+  width: 120.904
+  height: 80.01
+  note: Converted from inches.
+inner:
+  length: 165.1
+  width: 115.062
+  height: 73.914
+  note: Converted from inches.
+notes:
+- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'

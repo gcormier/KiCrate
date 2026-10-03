@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: CU-728
+series: UTILITY-CABINET
+url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-728/
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-728/
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb728-1.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb728.dxf
+  kind: cad
+  sha256: d8fceaa6245a9b90a4980f55fb1a3bfffe43adbec1d4a1c4fd50e1c0ecb2ba83
+  retrieved: '2026-10-03'
+outer:
+  length: 127.0
+  width: 101.6
+  height: 76.2
+  note: Converted from inches.
+inner:
+  length: 107.95
+  width: 82.55
+  height: 74.676
+  note: Converted from inches.
+notes:
+- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'

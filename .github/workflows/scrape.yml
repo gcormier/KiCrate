@@ -1,6 +1,6 @@
 name: scrape
 
-# Weekly: refresh scraped (unverified) Hammond data and open a PR with changes.
+# Weekly: refresh scraped (unverified) Hammond and Bud data and open a PR with changes.
 # Manual and verified entries are never overwritten.
 # Needs Settings -> Actions -> "Allow GitHub Actions to create and approve pull requests".
 on:
@@ -22,6 +22,7 @@ env:
 jobs:
   scrape:
     runs-on: ubuntu-24.04
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -49,12 +50,15 @@ jobs:
         run: |
           # shellcheck disable=SC2086 # word-splitting SERIES is intended
           uv run kicrate scrape hammond ${SERIES:+--series $SERIES} | tee scrape.log
-          uv run kicrate validate
+      - name: Scrape Bud (10 s crawl delay, ~40 min)
+        if: ${{ !inputs.series }}
+        run: uv run kicrate scrape bud | tee -a scrape.log
+      - run: uv run kicrate validate
       - uses: peter-evans/create-pull-request@v7
         with:
-          branch: scrape/hammond
-          title: "Scraped Hammond data (unverified)"
-          commit-message: "Refresh scraped Hammond data"
+          branch: scrape/weekly
+          title: "Scraped enclosure data (unverified)"
+          commit-message: "Refresh scraped enclosure data"
           body: |
             Weekly scrape. Entries are `provenance: scraped`, `verified: false`: check outlines against the drawings before setting `verified: true`.
           add-paths: data/

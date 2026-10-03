@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: PN-1338
+variants:
+- PN-1338-C
+- PN-1338-DG
+series: PN
+url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1338/
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1338/
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb1338.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb1338.dxf
+  kind: cad
+  sha256: 9dc656569278283f530bd0a81680ce6a0328d4a15c5b14c6f8afb3e79e28a4a4
+  retrieved: '2026-10-03'
+outer:
+  length: 160.02
+  width: 160.02
+  height: 59.944
+  note: Converted from inches.
+inner:
+  length: 153.924
+  width: 153.924
+  height: 54.102
+  note: Converted from inches.
+notes:
+- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'
