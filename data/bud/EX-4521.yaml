@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: EX-4521
+series: EX
+description: Extruded aluminium box with card slots, aluminium end panels and ABS bezels
+url: https://www.budind.com/product/general-use-boxes/extruded-aluminum-box-series/ex-4521/
+material: Aluminium (body), ABS UL94V-0 (bezels)
+provenance: manual
+verified: false
+last_checked: 2026-10-03
+sources:
+  - url: https://www.budind.com/wp-content/uploads/2019/01/hb4521.pdf
+    kind: drawing
+    sha256: fc705fab31aa4bc8b0eb9ca08d04388b38a23f69b514901cec4790a3d5402226
+    retrieved: 2026-10-03
+  - url: https://www.budind.com/wp-content/uploads/2019/01/hb4521.dxf
+    kind: cad
+    sha256: e3e79c74a9d9e220e4015c3085c0fe7c2b0597bea46d093c1730c7269322878b
+    retrieved: 2026-10-03
+outer:
+  length: 136.652
+  width: 150.114
+  height: 75.184
+  note: 5.38 x 5.91 x 2.96 in; length includes bezels (table dim A).
+inner:
+  length: 122.428
+  width: 145.694
+  height: 71.425
+  note: Length is internal clearance C (4.82 in); width is slot bottom to slot bottom (5.736 in).
+pcb_mounts:
+  - id: slots
+    type: card_guide_slots
+    description: Board slides in the side card slots; 0.25 mm side clearance to the slot bottoms.
+    outline:
+      shape: rect
+      size: [122.4, 145.2]
+    keepouts:
+      - {edge: y_min, width: 4.6, side: both, reason: card slot and wall rib}
+      - {edge: y_max, width: 4.6, side: both, reason: card slot and wall rib}
+    slots:
+      slot_width: 2.032
+      pcb_thickness: [0.8, 1.6]
+      levels: [9.99, 59.418]
+    notes:
+      - Drawing is in inches; converted to mm. Slot faces and floor from the DXF profile (template DXF; lengths from the drawing table).
+      - Keepout bands cover the slot engagement plus the wall bulge (inner wall 5.355 in apart).
+      - Board length is the internal clearance C; KiCrate's choice, not a Bud max-PCB figure.
+panels:
+  - id: end
+    faces: [front, back]
+    material: Aluminium (natural)
+    thickness: 1.524
+    outline:
+      shape: rect
+      size: [151.511, 76.073]
+    holes:
+      - {at: [-71.501, -34.1], drill: 3.4, countersink: [6.0, 90], screw: M3 x 10 flat head}
+      - {at: [71.501, -34.1], drill: 3.4, countersink: [6.0, 90], screw: M3 x 10 flat head}
+      - {at: [71.501, 34.1], drill: 3.4, countersink: [6.0, 90], screw: M3 x 10 flat head}
+      - {at: [-71.501, 34.1], drill: 3.4, countersink: [6.0, 90], screw: M3 x 10 flat head}
+    usable_area: [136.017, 71.374]
+    floor_y: -35.712
+    notes:
+      - Screw pattern 5.630 x 2.685 in from the drawing; hole and countersink size are KiCrate's choice for M3 flat head.

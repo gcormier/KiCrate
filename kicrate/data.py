@@ -83,3 +83,65 @@ def load_all(root: Path = DATA_DIR) -> tuple[list[Enclosure], list[str]]:
         errors += geometry_problems(enc)
         encs.append(enc)
     return encs, errors
+
+
+HEADER = "# yaml-language-server: $schema=../../schema/enclosure.schema.json\n"
+
+
+def _prune(v):
+    if isinstance(v, dict):
+        return {k: _prune(x) for k, x in v.items() if x is not None and x != [] and x != {}}
+    if isinstance(v, list):
+        return [_prune(x) for x in v]
+    return v
+
+
+class _Dumper(yaml.SafeDumper):
+    pass
+
+
+def _list(d, data):
+    # Short lists of scalars inline ([1, 2]); everything else block style.
+    flow = len(data) <= 4 and all(not isinstance(x, (dict, list)) for x in data)
+    return d.represent_sequence("tag:yaml.org,2002:seq", data, flow_style=flow)
+
+
+_Dumper.add_representer(list, _list)
+
+
+def yaml_text(body) -> str:
+    return yaml.dump(_prune(body), Dumper=_Dumper, sort_keys=False, allow_unicode=True, width=120)
+
+
+def dump_yaml(enc: Enclosure) -> str:
+    body = _prune(enc.model_dump(mode="json", exclude={"schema_version"}))
+    body["verified"] = enc.verified  # always explicit
+    return HEADER + yaml_text(body)
+
+
+def save_draft(enc: Enclosure, root: Path = DATA_DIR) -> str:
+    """Write scraped data unless a human-made or verified entry already covers the part.
+
+    Returns "new", "updated" or "skipped: <reason>".
+    """
+    existing, _ = load_all(root)
+    pns = {enc.part, *enc.variants}
+    for e in existing:
+        if pns & {e.part, *e.variants} and e.part != enc.part:
+            return f"skipped: covered by {e.key}"
+    path = root / enc.mfr / f"{enc.part}.yaml"
+    status = "new"
+    if path.exists():
+        old = load_file(path)
+        if old.verified or old.provenance != "scraped":
+            return f"skipped: {old.provenance}{' verified' if old.verified else ''} entry exists"
+        status = "updated"
+    problems = geometry_problems(enc)
+    if problems:
+        return "skipped: " + "; ".join(problems)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = dump_yaml(enc)
+    if path.exists() and path.read_text() == text:
+        return "unchanged"
+    path.write_text(text)
+    return status

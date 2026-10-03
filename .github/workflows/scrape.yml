@@ -1,0 +1,60 @@
+name: scrape
+
+# Weekly: refresh scraped (unverified) Hammond data and open a PR with changes.
+# Manual and verified entries are never overwritten.
+# Needs Settings -> Actions -> "Allow GitHub Actions to create and approve pull requests".
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      series:
+        description: "Space-separated Hammond series paths (blank = defaults)"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  LIBREDWG_VERSION: "0.14"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Cache LibreDWG
+        id: dwg
+        uses: actions/cache@v4
+        with:
+          path: ~/libredwg
+          key: libredwg-${{ env.LIBREDWG_VERSION }}-${{ runner.os }}
+      - name: Build LibreDWG
+        if: steps.dwg.outputs.cache-hit != 'true'
+        run: |
+          curl -sSLO https://ftp.gnu.org/gnu/libredwg/libredwg-$LIBREDWG_VERSION.tar.xz
+          tar xf libredwg-$LIBREDWG_VERSION.tar.xz && cd libredwg-$LIBREDWG_VERSION
+          ./configure --disable-bindings --disable-docs --prefix="$HOME/libredwg" -q
+          make -j"$(nproc)" >/dev/null && make install >/dev/null
+      - name: Put LibreDWG on PATH
+        run: |
+          echo "$HOME/libredwg/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$HOME/libredwg/lib" >> "$GITHUB_ENV"
+      - run: uv sync --locked
+      - name: Scrape Hammond
+        env:
+          SERIES: ${{ inputs.series }}
+        run: |
+          # shellcheck disable=SC2086 # word-splitting SERIES is intended
+          uv run kicrate scrape hammond ${SERIES:+--series $SERIES} | tee scrape.log
+          uv run kicrate validate
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: scrape/hammond
+          title: "Scraped Hammond data (unverified)"
+          commit-message: "Refresh scraped Hammond data"
+          body: |
+            Weekly scrape. Entries are `provenance: scraped`, `verified: false`: check outlines against the drawings before setting `verified: true`.
+          add-paths: data/
