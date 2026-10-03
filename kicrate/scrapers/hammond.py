@@ -1,7 +1,7 @@
 """Hammond Manufacturing scraper.
 
 Series page -> part pages -> attributes (size, max PCB) + per-part DWG.
-Colour/pack variants with identical size, PCB size and description are folded
+Colour variants (same size, max PCB and part-number stem) are folded
 into one entry. Output is draft data (`provenance: scraped`, `verified: false`).
 """
 
@@ -72,7 +72,8 @@ def part_page(pn: str) -> PartPage:
 
 
 def _group_key(p: PartPage):
-    return (p.size_mm, p.max_pcb, p.attrs.get("Long Description", "").lower())
+    # Colour suffixes (BK, BU, GY, TBU, ...) differ; size, PCB and the numeric stem do not.
+    return (p.size_mm, p.max_pcb, re.sub(r"[A-Z]+$", "", p.pn))
 
 
 def _dwg_from_zip(blob: bytes) -> tuple[bytes, str] | None:
