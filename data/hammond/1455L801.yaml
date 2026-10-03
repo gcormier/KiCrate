@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1455L801
+variants:
+- 1455L801BK
+- 1455L801BU
+- 1455L801RD
+series: '1455'
+description: extruded aluminum enclosure w/ metal end panels
+url: https://www.hammfg.com/part/1455L801
+material: Aluminum (Extruded)
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1455L801
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1455L801.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1455L801.zip
+  kind: cad
+  sha256: a1a598fee89adff1cf7d4913de952b6a0bfa366ff25e7390b9ea4bcc5ab39dd8
+  retrieved: '2026-10-03'
+outer:
+  length: 80.0
+  width: 103.0
+  height: 30.0
+pcb_mounts:
+- id: main
+  type: card_guide_slots
+  outline:
+    shape: rect
+    size: [99.5, 79.0]
+    corner_radius: 0.0
+  notes:
+  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
+    notches still need to be added.

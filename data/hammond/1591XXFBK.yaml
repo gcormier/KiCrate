@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1591XXFBK
+variants:
+- 1591XXFFLBK
+- 1591XXFFLGY
+- 1591XXFGY
+- 1591XXFSBK
+series: 1591XX
+description: enclosure - plastic
+url: https://www.hammfg.com/part/1591XXFBK
+material: ABS Plastic
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1591XXFBK
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1591XXFBK.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1591XXFBK.zip
+  kind: cad
+  sha256: 39b240f7a09897234697b6639710ead4c43e36875d831d2a061e0f70d1c4880a
+  retrieved: '2026-10-03'
+outer:
+  length: 221.0
+  width: 150.0
+  height: 58.0
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: path
+    nodes:
+    - [-97.0, 66.5, -98.464, 62.964]
+    - [-5.0, 66.5]
+    - [5.0, 66.5, 0.0, 61.5]
+    - [97.0, 66.5]
+    - [102.0, 61.5, 98.464, 62.964]
+    - [102.0, -61.5]
+    - [97.0, -66.5, 98.464, -62.964]
+    - [5.0, -66.5]
+    - [-5.0, -66.5, 0.0, -61.5]
+    - [-97.0, -66.5]
+    - [-102.0, -61.5, -98.464, -62.964]
+    - [-102.0, 61.5]
+  holes:
+  - at: [-85.0, -50.0]
+    drill: 3.5
+    plated: false
+  - at: [-85.0, 50.0]
+    drill: 3.5
+    plated: false
+  - at: [-25.0, -50.0]
+    drill: 3.5
+    plated: false
+  - at: [-25.0, 50.0]
+    drill: 3.5
+    plated: false
+  - at: [25.0, -50.0]
+    drill: 3.5
+    plated: false
+  - at: [25.0, 50.0]
+    drill: 3.5
+    plated: false
+  - at: [85.0, -50.0]
+    drill: 3.5
+    plated: false
+  - at: [85.0, 50.0]
+    drill: 3.5
+    plated: false
+  notes:
+  - Outline and holes extracted from the manufacturer DWG.
+  - Drawing's inside dims 204.471 x 126 x 57.34 conflict with the PCB size; omitted.

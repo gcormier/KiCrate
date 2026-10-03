@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .. import extract
+from ..data import geometry_problems
 from ..schema import Box3, Enclosure, PcbMount, RectOutline, Source
 from .http import get
 
@@ -123,7 +124,7 @@ def build_entry(series: str, pages: list[PartPage], today: dt.date) -> Enclosure
                  "Mounting holes, bosses and notches still need to be added.", *notes]
 
     mount = PcbMount(id="main", type=SERIES.get(series, "bosses"), outline=outline, holes=holes, hole_pattern=pattern, notes=notes)
-    return Enclosure(
+    enc = Enclosure(
         mfr="hammond",
         part=rep.pn,
         variants=sorted(p.pn for p in pages if p is not rep),
@@ -139,6 +140,11 @@ def build_entry(series: str, pages: list[PartPage], today: dt.date) -> Enclosure
         inner=inner,
         pcb_mounts=[mount],
     )
+    if inner and any("larger than inside" in p for p in geometry_problems(enc)):
+        # Drawing labels sometimes refer to another level of the box; trust the PCB size.
+        mount.notes.append(f"Drawing's inside dims {inner.length:g} x {inner.width:g} x {inner.height:g} conflict with the PCB size; omitted.")
+        enc = enc.model_copy(update={"inner": None})
+    return enc
 
 
 def scrape(series_list: list[str], parts: list[str] | None = None, limit: int | None = None, log=print) -> list[Enclosure]:

@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1593NBK
+variants:
+- 1593NGY
+- 1593NTBU
+series: '1593'
+description: enclosure - plastic
+url: https://www.hammfg.com/part/1593NBK
+material: ABS Plastic
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1593NBK
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1593NBK.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1593NBK.zip
+  kind: cad
+  sha256: 481657a166c6a88c857cc611175fdef2d4a61f0c1164b9ae048525193a02bcff
+  retrieved: '2026-10-03'
+outer:
+  length: 109.0
+  width: 74.0
+  height: 25.0
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: rect
+    size: [102.5, 66.14]
+    corner_radius: 0.0
+  notes:
+  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
+    notches still need to be added.
+  - 'Inside dims in drawing: height 19.7, width 68.823'

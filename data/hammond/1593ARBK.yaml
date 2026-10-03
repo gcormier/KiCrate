@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1593ARBK
+variants:
+- 1593ARGY
+- 1593ARTBU
+series: '1593'
+description: enclosure - plastic
+url: https://www.hammfg.com/part/1593ARBK
+material: ABS Plastic
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1593ARBK
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1593ARBK.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1593ARBK.zip
+  kind: cad
+  sha256: 660fec9640d192bd05bb44ac9b5c642e4260e36917814fb122a1e9b1be67c897
+  retrieved: '2026-10-03'
+outer:
+  length: 75.0
+  width: 74.0
+  height: 27.0
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: rect
+    size: [68.5, 67.5]
+    corner_radius: 0.0
+  notes:
+  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
+    notches still need to be added.
+  - 'Inside dims in drawing: width 67.89'

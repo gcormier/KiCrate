@@ -101,8 +101,8 @@ class _Dumper(yaml.SafeDumper):
 
 
 def _list(d, data):
-    # Short lists of scalars inline ([1, 2]); everything else block style.
-    flow = len(data) <= 4 and all(not isinstance(x, (dict, list)) for x in data)
+    # Short lists of numbers inline ([1, 2]); everything else block style.
+    flow = len(data) <= 4 and all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in data)
     return d.represent_sequence("tag:yaml.org,2002:seq", data, flow_style=flow)
 
 
