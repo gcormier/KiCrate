@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1591XXEBK
+variants:
+- 1591XXEFLBK
+- 1591XXEFLGY
+- 1591XXEGY
+- 1591XXESBK
+- 1591XXESFLBK
+- 1591XXETBU
+series: 1591XX
+description: enclosure - plastic
+url: https://www.hammfg.com/part/1591XXEBK
+material: ABS Plastic
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1591XXEBK
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1591XXEBK.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1591XXEBK.zip
+  kind: cad
+  sha256: a59286ee7d6097a4f899d22f629078421e89e092d238d94a2eb8eae3ff4cce1d
+  retrieved: '2026-10-03'
+outer:
+  length: 193.0
+  width: 112.0
+  height: 56.0
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: path
+    nodes:
+    - [-88.5, 44.5]
+    - [-84.25, 48.75, -85.495, 45.745]
+    - [-84.25, 52.5]
+    - [-4.25, 52.5]
+    - [-4.25, 48.75]
+    - [4.25, 48.75, -0.0, 44.5]
+    - [4.25, 52.5]
+    - [84.25, 52.5]
+    - [84.25, 48.75]
+    - [88.5, 44.5, 85.495, 45.745]
+    - [92.5, 44.5]
+    - [92.5, -44.5]
+    - [88.5, -44.5]
+    - [84.25, -48.75, 85.495, -45.745]
+    - [84.25, -52.5]
+    - [4.25, -52.5]
+    - [4.25, -48.75]
+    - [-4.25, -48.75, -0.0, -44.5]
+    - [-4.25, -52.5]
+    - [-84.25, -52.5]
+    - [-84.25, -48.75]
+    - [-88.5, -44.5, -85.495, -45.745]
+    - [-92.5, -44.5]
+    - [-92.5, 44.5]
+  holes:
+  - at: [-77.5, -42.25]
+    drill: 3.5
+    plated: false
+  - at: [-77.5, 42.25]
+    drill: 3.5
+    plated: false
+  - at: [-11.25, -42.25]
+    drill: 3.5
+    plated: false
+  - at: [-11.25, 42.25]
+    drill: 3.5
+    plated: false
+  - at: [11.25, -42.25]
+    drill: 3.5
+    plated: false
+  - at: [11.25, 42.25]
+    drill: 3.5
+    plated: false
+  - at: [77.5, -42.25]
+    drill: 3.5
+    plated: false
+  - at: [77.5, 42.25]
+    drill: 3.5
+    plated: false
+  notes:
+  - Outline and holes extracted from the manufacturer DWG.
+  - Drawing's inside dims 185.654 x 89.771 x 57 conflict with the PCB size; omitted.

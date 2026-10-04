@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1591XXSBK
+variants:
+- 1591XXSFLBK
+- 1591XXSFLGY
+- 1591XXSGY
+- 1591XXSSBK
+- 1591XXSSFLBK
+- 1591XXSTBU
+series: 1591XX
+description: enclosure - plastic
+url: https://www.hammfg.com/part/1591XXSBK
+material: ABS Plastic
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1591XXSBK
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1591XXSBK.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1591XXSBK.zip
+  kind: cad
+  sha256: f22ae5f16cd7bd7928460265283d081a995cef352e3e31b17b5b3bd34939e29f
+  retrieved: '2026-10-03'
+outer:
+  length: 109.0
+  width: 81.0
+  height: 41.0
+inner:
+  length: 105.954
+  width: 78.054
+  height: 40.0
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: path
+    nodes:
+    - [-44.896, 34.456, -45.922, 31.978]
+    - [-44.896, 38.951]
+    - [44.896, 38.951]
+    - [44.896, 34.456]
+    - [48.401, 30.951, 45.922, 31.978]
+    - [52.896, 30.951]
+    - [52.896, -30.951]
+    - [48.401, -30.951]
+    - [44.896, -34.456, 45.922, -31.978]
+    - [44.896, -38.951]
+    - [-44.896, -38.951]
+    - [-44.896, -34.456]
+    - [-48.401, -30.951, -45.922, -31.978]
+    - [-52.895, -30.951]
+    - [-52.896, 30.951]
+    - [-48.401, 30.951]
+  hole_pattern:
+    pitch: [73.304, 56.896]
+    center: [0.0, 0.0]
+    drill: 3.505
+    plated: false
+  notes:
+  - Outline and holes extracted from the manufacturer DWG.

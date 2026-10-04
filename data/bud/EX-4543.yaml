@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: bud
+part: EX-4543
+series: EXTRUDED-ALUMINUM-BOX
+url: https://www.budind.com/product/general-use-boxes/extruded-aluminum-box-series/ex-4543/
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.budind.com/product/general-use-boxes/extruded-aluminum-box-series/ex-4543/
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb4541.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.budind.com/wp-content/uploads/2019/01/hb4541.dxf
+  kind: cad
+  sha256: 4bb3f9a4dfe1a59bf0bf2fb57d2d95e05dc69c161afe2f76ec5074e8f4d40154
+  retrieved: '2026-10-03'
+outer:
+  length: 96.012
+  width: 96.012
+  height: 236.728
+  note: Converted from inches.
+inner:
+  length: 77.216
+  width: 77.216
+  height: 215.9
+  note: Converted from inches.
+notes:
+- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'

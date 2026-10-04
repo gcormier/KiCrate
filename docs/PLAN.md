@@ -51,9 +51,25 @@ data/<mfr>/<part>.yaml
 - **main:** build, Release zip, Pages gallery
 - **Weekly:** scrape, diff against the repo, open a PR with drafts
 
+## Findings (milestone 1)
+- **Hammond part pages** (`/part/<PN>`) list "Max. P.C. Board Length/Width (mm)" and link to:
+  - `files/parts/pdf/<PN>.pdf`
+  - `files/parts/dxf/<PN>.zip`, which actually contains a DWG
+- **DWG → DXF:** LibreDWG `dwg2dxf` works. Drawings are in mm, and most views are 1:1.
+- **Scaled views:** some views are scaled, e.g. the 1593L end panel is 1.2:1, shown as DIMENSION `dimlfac` = 0.8333. The extractor must apply that factor.
+- **Reading DWG geometry directly** gives exact outlines and hole centres. This caught a fillet I had misread from the PDF, so the scraper should prefer the DWG and fall back to the PDF.
+- **Designer choices:** where Hammond gives no PCB outline or hole size (e.g. the 1593L notches, the PCB hole diameter), the data records the value and says in `notes` that it is KiCrate's choice.
+
 ## Milestones
-1. Schema, CLI, S-expr writer, and a few hand-entered 1455 + 1591 parts. DXF + kicad_pcb generation passing the kicad-cli check.
-2. Panel generators (1455 end plates, 159x lids/ends).
-3. Hammond scraper and PDF extraction producing draft PRs.
-4. CI release + Pages gallery.
-5. Bud Industries.
+1. ✅ Schema, CLI, S-expr writer, hand-entered 1455 + 1591 + 1593 parts; DXF + kicad_pcb generation passing kicad-cli DRC.
+2. ✅ Panel generators (KiCad front-panel PCB, DXF, 1:1 SVG drill template with PCB/slot levels).
+3. ✅ Hammond scraper: part attributes + DWG → DXF geometry extraction (falls back to the max-PCB rectangle); `kicrate extract` for local CAD files.
+4. ✅ CI build/DRC artifacts, GitHub Pages gallery, tagged releases, weekly scrape → PR.
+5. ✅ Bud Industries: scraper records dimensions + drawing/DXF links (PCB layout left for humans); EX-4521 hand-entered; browser-assisted workflow documented.
+
+## Next (refinement)
+- Verify the existing entries against real enclosures.
+- Hammond: extract bosses and notches from drawings that have no PCB view, e.g. the 1593 series (posts and cover bosses are in the DWG).
+- Bud: work out how to read PN-series boss and rib geometry; complete the CU/PN drafts.
+- Side panels (`left`/`right` faces) with the X mirroring handled.
+- A 3D-print output, if wanted later (currently out of scope).

@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1455U2802
+variants:
+- 1455U2802BK
+series: '1455'
+description: extruded aluminum enclosure w/ plastic closed bezels
+url: https://www.hammfg.com/part/1455U2802
+material: Aluminum (Extruded)
+provenance: scraped
+verified: false
+last_checked: '2026-10-03'
+sources:
+- url: https://www.hammfg.com/part/1455U2802
+  kind: product_page
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/pdf/1455U2802.pdf
+  kind: drawing
+  retrieved: '2026-10-03'
+- url: https://www.hammfg.com/files/parts/dxf/1455U2802.zip
+  kind: cad
+  sha256: d42af7e59097f852bafe3a85aff57b78d6f6c8357863c83ece0d9858fd845ae1
+  retrieved: '2026-10-03'
+outer:
+  length: 279.0
+  width: 191.0
+  height: 66.0
+pcb_mounts:
+- id: main
+  type: card_guide_slots
+  outline:
+    shape: rect
+    size: [280.0, 186.48]
+    corner_radius: 0.0
+  notes:
+  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
+    notches still need to be added.

@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1455N1201
+variants: [1455N1201BK, 1455N1201BU, 1455N1201RD]
+series: "1455"
+description: Extruded aluminium enclosure with PCB card slots, metal end panels and plastic bezels
+url: https://www.hammfg.com/part/1455N1201
+material: Aluminium 6063 (extruded, anodized)
+provenance: manual
+verified: false
+last_checked: 2026-09-29
+sources:
+  - url: https://www.hammfg.com/files/parts/pdf/1455N1201.pdf
+    kind: drawing
+    sha256: 4acd6738b377bf2c98b2c87b348b381c68c9e670f4be95bd5337ed9969d26b5a
+    retrieved: 2026-09-29
+  - url: https://www.hammfg.com/files/parts/dxf/1455N1201.zip
+    kind: cad
+    retrieved: 2026-09-29
+  - url: https://www.hammfg.com/part/1455N1201
+    kind: product_page
+    retrieved: 2026-09-29
+outer:
+  length: 120.0
+  width: 103.0
+  height: 53.0
+  note: Extrusion only; bezels add length.
+inner:
+  length: 120.0
+  width: 100.0
+  height: 49.7
+  note: Width is slot bottom to slot bottom; slot tooth tips are 95.0 apart.
+pcb_mounts:
+  - id: slots
+    type: card_guide_slots
+    description: Max PCB 119 x 99 (Hammond part attributes) sliding in the side card slots.
+    outline:
+      shape: rect
+      size: [119.0, 99.0]
+    keepouts:
+      - {edge: y_min, width: 2.0, side: both, reason: inside card slot}
+      - {edge: y_max, width: 2.0, side: both, reason: inside card slot}
+    slots:
+      slot_width: 2.0
+      pcb_thickness: [0.8, 1.6]
+      levels: [6.29, 9.79, 13.29, 16.79, 20.29, 23.79, 27.29, 30.79, 34.29, 37.79, 41.29]
+    notes:
+      - Slots are 2.0 wide, 2.5 deep, on a 3.5 pitch (manufacturer DWG, 1:1 mm).
+      - Slot levels are the slot's lower face above the inside floor.
+panels:
+  - id: end
+    faces: [front, back]
+    material: Aluminium
+    thickness: 1.5
+    outline:
+      shape: rect
+      size: [103.124, 53.086]
+      corner_radius: 3.99
+    holes:
+      - {at: [-47.498, -22.733], drill: 4.19, countersink: [5.842, 82], screw: '#6 Taptight'}
+      - {at: [47.498, -22.733], drill: 4.19, countersink: [5.842, 82], screw: '#6 Taptight'}
+      - {at: [47.498, 22.733], drill: 4.19, countersink: [5.842, 82], screw: '#6 Taptight'}
+      - {at: [-47.498, 22.733], drill: 4.19, countersink: [5.842, 82], screw: '#6 Taptight'}
+    usable_area: [97.1, 48.7]
+    floor_y: -24.85
+    notes:
+      - usable_area is the plastic bezel opening.
+      - Panel is centred on the extrusion (inside floor 24.85 below centre, per DWG).

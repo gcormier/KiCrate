@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=../../schema/enclosure.schema.json
+mfr: hammond
+part: 1593LBK
+variants: [1593LGY, 1593LTBU]
+series: "1593"
+description: ABS hand-held/instrument enclosure with removable end panels
+url: https://www.hammfg.com/part/1593LBK
+material: ABS (UL94-HB)
+provenance: manual
+verified: false
+last_checked: 2026-09-29
+sources:
+  - url: https://www.hammfg.com/files/parts/pdf/1593LBK.pdf
+    kind: drawing
+    sha256: 2ce53ee8e342710451c536db8ce5d12a5b74352fc7860f3d618b2b4512a06619
+    retrieved: 2026-09-29
+  - url: https://www.hammfg.com/files/parts/dxf/1593LBK.zip
+    kind: cad
+    retrieved: 2026-09-29
+  - url: https://www.hammfg.com/part/1593LBK
+    kind: product_page
+    retrieved: 2026-09-29
+outer:
+  length: 92.22
+  width: 66.22
+  height: 28.0
+inner:
+  length: 84.37
+  width: 59.39
+  height: 22.0
+  note: Measured at the parting line; floor is 60.22 wide.
+pcb_mounts:
+  - id: floor
+    type: bosses
+    description: Max PCB 82.66 x 56.61 (Hammond part attributes) on the four #4 posts.
+    outline:
+      shape: rect
+      size: [82.66, 56.61]
+      edge_notches:
+        - {edge: y_max, at: -20.436, width: 8.75, depth: 7.7, inner_radius: 1.0}
+        - {edge: y_max, at: 20.436, width: 8.75, depth: 7.7, inner_radius: 1.0}
+        - {edge: y_min, at: -20.436, width: 8.75, depth: 7.7, inner_radius: 1.0}
+        - {edge: y_min, at: 20.436, width: 8.75, depth: 7.7, inner_radius: 1.0}
+    hole_pattern:
+      pitch: [54.0, 28.0]
+      drill: 3.2
+      boss_diameter: 5.0
+      screw: '#4 x 1/4" self-tapping'
+    notes:
+      - Post and cover-screw boss positions from the manufacturer DWG (1:1, mm).
+      - Notches clear the cover-screw bosses (dia 7.75 at base, centres +/-20.436, +/-25) by 0.5 mm; notch size is KiCrate's, not Hammond's.
+      - PCB hole dia 3.2 is KiCrate's #4 clearance choice; Hammond does not specify one.
+panels:
+  - id: end
+    faces: [front, back]
+    material: ABS (flat panel supplied; contoured also included)
+    thickness: 1.7
+    outline:
+      shape: rect
+      size: [60.0, 22.7]
+      corner_radius: 1.5
+    notes:
+      - From the DWG end-panel view (drawn at 1.2:1).
