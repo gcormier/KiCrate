@@ -119,6 +119,13 @@ def dump_yaml(enc: Enclosure) -> str:
     return HEADER + yaml_text(body)
 
 
+def _undated(enc: Enclosure) -> dict:
+    d = enc.model_dump(mode="json", exclude={"last_checked"})
+    for src in d["sources"]:
+        src.pop("retrieved", None)
+    return d
+
+
 def save_draft(enc: Enclosure, root: Path = DATA_DIR) -> str:
     """Write scraped data unless a human-made or verified entry already covers the part.
 
@@ -139,9 +146,9 @@ def save_draft(enc: Enclosure, root: Path = DATA_DIR) -> str:
     problems = geometry_problems(enc)
     if problems:
         return "skipped: " + "; ".join(problems)
+    if path.exists() and _undated(load_file(path)) == _undated(enc):
+        return "unchanged"  # only the check/retrieval dates would move; avoid churn
     path.parent.mkdir(parents=True, exist_ok=True)
     text = dump_yaml(enc)
-    if path.exists() and path.read_text() == text:
-        return "unchanged"
     path.write_text(text)
     return status

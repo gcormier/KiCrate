@@ -107,3 +107,23 @@ def test_bud_product(monkeypatch):
     assert p["outer"] == pytest.approx((155.956, 80.772, 136.652))
     assert p["inner"] == pytest.approx((135.89, 71.12, 122.428))
     assert p["files"]["dxf"].endswith("hb4521.dxf")
+
+
+def test_save_draft_ignores_date_only_changes(tmp_path):
+    import datetime as dt
+
+    from kicrate import data
+    from kicrate.schema import Box3, Enclosure, Source
+
+    def enc(day, height=10.0):
+        d = dt.date(2026, 10, day)
+        return Enclosure(mfr="bud", part="X-1", series="X", provenance="scraped", last_checked=d,
+                         sources=[Source(url="https://example.com/x", kind="product_page", retrieved=d)],
+                         outer=Box3(length=30, width=20, height=height))
+
+    assert data.save_draft(enc(3), tmp_path) == "new"
+    before = (tmp_path / "bud" / "X-1.yaml").read_text()
+    assert data.save_draft(enc(5), tmp_path) == "unchanged"
+    assert (tmp_path / "bud" / "X-1.yaml").read_text() == before
+    assert data.save_draft(enc(5, height=11.0), tmp_path) == "updated"
+    assert "2026-10-05" in (tmp_path / "bud" / "X-1.yaml").read_text()
