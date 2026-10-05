@@ -131,6 +131,8 @@ def board(enc: Enclosure, mount: PcbMount) -> list:
     segs = outline_path(mount.outline)
     board_poly = flatten(segs)
     tree += _segments(segs, "Edge.Cuts", 0.05, ids)
+    for c in mount.cutouts:
+        tree += _segments(outline_path(c), "Edge.Cuts", 0.05, ids)
 
     # Enclosure inside wall for reference.
     if enc.inner:

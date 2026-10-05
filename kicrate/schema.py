@@ -147,6 +147,7 @@ class PcbMount(Model):
     holes: list[Hole] = Field(default_factory=list)
     hole_pattern: HolePattern | None = None
     keepouts: list[Keepout] = Field(default_factory=list)
+    cutouts: list[Outline] = Field(default_factory=list, description="Internal cut-outs (e.g. around bosses that aren't posts)")
     slots: Slots | None = None
     z: float | None = Field(None, description="Board bottom height above the inside floor")
     notes: list[str] = Field(default_factory=list)

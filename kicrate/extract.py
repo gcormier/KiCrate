@@ -67,6 +67,7 @@ class Extraction:
     outline: RectOutline | PathOutline
     holes: list[Hole] = field(default_factory=list)
     hole_pattern: HolePattern | None = None
+    cutouts: list = field(default_factory=list)
     scale: float = 1.0
     notes: list[str] = field(default_factory=list)
 
@@ -352,3 +353,219 @@ def inside_dims(doc) -> dict[str, float]:
             f = d.override().get("dimlfac") or 1.0
             out[(m.group(1) or m.group(2)).lower()] = round(d.get_measurement() * f, 3)
     return out
+
+
+# --- Boxes that publish posts but no PCB outline (e.g. Bud PN series) -------------------------
+
+BOSS_TEXT = re.compile(r"BOSS", re.I)
+THREAD = re.compile(r"\b(M\d+(?:\.\d+)?)\b|(#\d+)")
+# Clearance hole for each thread (ISO 273 medium / common practice), mm.
+CLEARANCE_HOLE = {"M2": 2.2, "M2.5": 2.7, "M3": 3.2, "M4": 4.3, "M5": 5.3, "#2": 2.7, "#4": 3.2, "#6": 3.5, "#8": 4.3}
+
+
+def _text_items(msp):
+    for e in msp.query("MTEXT TEXT"):
+        t = e.plain_text() if e.dxftype() == "MTEXT" else e.dxf.text
+        yield " ".join(t.split()), (e.dxf.insert.x, e.dxf.insert.y)
+
+
+def _continuous(e, doc) -> bool:
+    """Solid (visible-edge) linework only: dashed/phantom/centre/hidden lines are not walls."""
+    lt = (e.dxf.get("linetype") or "BYLAYER").upper()
+    if lt == "BYLAYER":
+        layer = doc.layers.get(e.dxf.get("layer", "0")) if doc.layers.has_entry(e.dxf.get("layer", "0")) else None
+        lt = (layer.dxf.get("linetype") if layer else "CONTINUOUS").upper()
+    return lt in ("CONTINUOUS", "BYBLOCK")
+
+
+def _linework(msp, view, skip=SKIP_LAYERS):
+    from shapely.geometry import LineString
+
+    doc = msp.doc
+    out = []
+
+    def add(pts):
+        if len(pts) >= 2:
+            g = LineString(pts)
+            if g.length > 0 and view.intersects(g):
+                out.append(g)
+
+    for e in msp:
+        if skip.search(e.dxf.get("layer", "")) or not _continuous(e, doc):
+            continue
+        t = e.dxftype()
+        if t == "LINE":
+            add([(e.dxf.start.x, e.dxf.start.y), (e.dxf.end.x, e.dxf.end.y)])
+        elif t == "LWPOLYLINE":
+            for v in e.virtual_entities():
+                if v.dxftype() == "LINE":
+                    add([(v.dxf.start.x, v.dxf.start.y), (v.dxf.end.x, v.dxf.end.y)])
+                else:
+                    add([(p.x, p.y) for p in v.flattening(0.002)])
+        elif t in ("ARC", "CIRCLE", "SPLINE", "ELLIPSE"):
+            add([(p.x, p.y) for p in e.flattening(0.002)])
+    return out
+
+
+DIA = re.compile(r"(\d*\.\d+|\d+)\s*DIA", re.I)
+
+
+def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2.0,
+                      inner_size: tuple[float, float] | None = None) -> list[tuple[str, Extraction]]:
+    """Boards for boxes whose drawing shows PCB posts ("... BOSS WITH M3 ...") but no outline.
+
+    One result per post callout, as (id, Extraction). The body (top) view is the closed outline
+    matching `outer_size` (mm; the drawing may be in inches). Posts are the circle groups the
+    callout's leader points at, or else whose diameter the callout states. The board is the
+    enclosed floor shrunk by `clearance` from walls, ribs and other bosses, capped at
+    `inner_size` minus the clearance, and always covering its posts.
+    """
+    from shapely.geometry import Point, Polygon, box
+    from shapely.ops import unary_union
+
+    msp = doc.modelspace()
+    callouts = [(t, p) for t, p in _text_items(msp) if BOSS_TEXT.search(t) and THREAD.search(t)]
+    if not callouts:
+        return []
+    circles = [(e.dxf.center.x, e.dxf.center.y, e.dxf.radius) for e in msp.query("CIRCLE")
+               if not SKIP_LAYERS.search(e.dxf.get("layer", ""))]
+    leaders = [[(v[0], v[1]) for v in e.vertices] for e in msp.query("LEADER")]
+
+    def ring_set(center):
+        return tuple(sorted(round(r, 4) for x, y, r in circles if math.dist((x, y), center) < 1e-3))
+
+    # Candidate top views: closed outlines of the outer size, at inch or mm scale.
+    want = sorted(outer_size, reverse=True)
+    views = []
+    for f in (25.4, 1.0):
+        for lp in closed_loops(_segments(msp)):
+            x0, y0, x1, y1 = lp.bbox
+            w, h = (x1 - x0) * f, (y1 - y0) * f
+            if abs(max(w, h) - want[0]) < 1.0 and abs(min(w, h) - want[1]) < 1.0:
+                views.append((lp, f))
+        if views:
+            break
+    if not views:
+        return []
+
+    results = []
+    for n, (text, tpos) in enumerate(callouts):
+        best = None
+        for lp, f in views:
+            outline_poly = Polygon(lp.poly)
+            inside = [c for c in circles if outline_poly.contains(Point(c[:2]))]
+            posts = []
+            if leaders:
+                leader = min(leaders, key=lambda vs: min(math.dist(vs[-1], tpos), math.dist(vs[0], tpos)))
+                tip = leader[0] if math.dist(leader[-1], tpos) <= math.dist(leader[0], tpos) else leader[-1]
+                if outline_poly.contains(Point(tip)) and inside:
+                    hit = min(inside, key=lambda c: abs(math.dist(c[:2], tip) - c[2]))
+                    if abs(math.dist(hit[:2], tip) - hit[2]) < 0.05 * max(want) / f:
+                        sig = ring_set(hit[:2])
+                        posts = sorted({(round(x, 4), round(y, 4)) for x, y, _ in inside if ring_set((x, y)) == sig})
+            if not posts:  # match the diameters the callout states
+                dias = [float(d) for d in DIA.findall(text)]
+                tol = 0.004 if f == 25.4 else 0.1
+                posts = sorted({(round(x, 4), round(y, 4)) for x, y, r in inside if any(abs(2 * r - d) < tol for d in dias)})
+            if posts and (best is None or len(posts) > len(best[2])):
+                best = (lp, f, posts)
+        if not best:
+            continue
+        lp, f, posts = best
+        ext = _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size)
+        if ext:
+            thread = THREAD.search(text)
+            screw = thread.group(1) or thread.group(2)
+            kind = "inserts" if "INSERT" in text.upper() else "bosses"
+            results.append((f"{screw.lower().replace('#', 'no').replace('.', '_')}_{kind}" if len(callouts) > 1 else "main", ext))
+    return results
+
+
+def _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size):
+    from shapely.geometry import Point, Polygon, box
+    from shapely.ops import unary_union
+
+    x0, y0, x1, y1 = lp.bbox
+    pad = 0.02 * max(x1 - x0, y1 - y0)
+    view = box(x0 - pad, y0 - pad, x1 + pad, y1 + pad)
+    eps = 0.08 / f  # ~0.08 mm, in drawing units
+    walls = unary_union([g.buffer(eps) for g in _linework(msp, view)])
+    free = view.difference(walls)
+    regions = [g for g in getattr(free, "geoms", [free]) if not g.intersects(view.exterior)]
+    if not regions:
+        return None
+    floor = max(regions, key=lambda g: g.area).buffer(eps)
+    cl = clearance / f
+    post_pts = [Point(c) for c in posts]
+    boss_r = max(max(ring_set(c)) for c in posts)
+    # Islands that touch a post (the boss itself, its stiffening fins) belong to the post; the rest
+    # (e.g. bosses of another mounting option) are obstacles the board must clear.
+    near_posts = unary_union([p.buffer(2 * max(ring_set(c))) for p, c in zip(post_pts, posts)])
+    islands = [Polygon(r) for r in floor.interiors if not Polygon(r).intersects(near_posts)]
+    # The board rests on its posts (their stiffening fins are lower), so a post merged into a wall is
+    # still board area: add each post's boss, grown by the clearance, before shrinking.
+    discs = [p.buffer(boss_r, quad_segs=8) for p in post_pts]
+    area = unary_union([Polygon(floor.exterior), *(d.buffer(cl) for d in discs)])
+    if area.geom_type == "Polygon":  # pockets the discs enclose (fin gaps) are post, not obstacle
+        area = Polygon(area.exterior, [r for r in area.interiors if not Polygon(r).intersects(near_posts)])
+    board = area.buffer(-cl, quad_segs=4, join_style="round")
+    if islands:
+        board = board.difference(unary_union(islands).buffer(cl, quad_segs=4))
+    if inner_size:  # stated inside size is at the floor/between ribs; walls are drafted
+        fx0, fy0, fx1, fy1 = floor.bounds
+        cx, cy = (fx0 + fx1) / 2, (fy0 + fy1) / 2
+        L, W = sorted(inner_size, reverse=True)
+        a, b = (L / f / 2 - cl, W / f / 2 - cl)
+        if (fy1 - fy0) > (fx1 - fx0):
+            a, b = b, a
+        board = board.intersection(unary_union([box(cx - a, cy - b, cx + a, cy + b), *discs]))
+    board = unary_union([board, *discs])
+    if board.is_empty:
+        return None
+    if board.geom_type != "Polygon":
+        board = max(board.geoms, key=lambda g: g.area)
+    from shapely import affinity, make_valid, set_precision
+
+    from .schema import PolygonOutline
+
+    bx0, by0, bx1, by1 = board.bounds
+    rotate = (by1 - by0) > (bx1 - bx0)
+    cx, cy = (bx0 + bx1) / 2, (by0 + by1) / 2
+
+    def tr(p):
+        x, y = (p[0] - cx) * f, (p[1] - cy) * f
+        return (round(-y, 2), round(x, 2)) if rotate else (round(x, 2), round(y, 2))
+
+    # To board mm (centred, long side on X), simplify to 0.1 mm, snap to a 0.01 mm grid (stays valid).
+    mm = affinity.scale(affinity.translate(board, -cx, -cy), f, f, origin=(0, 0))
+    if rotate:
+        mm = affinity.rotate(mm, 90, origin=(0, 0))
+    mm = make_valid(set_precision(mm.simplify(0.1), 0.01))  # 0.1 mm is ample for a board edge
+    if mm.geom_type != "Polygon":
+        mm = max((g for g in getattr(mm, "geoms", []) if g.geom_type == "Polygon"), key=lambda g: g.area)
+    pts = [(round(x, 2), round(y, 2)) for x, y in list(mm.exterior.coords)[:-1]]
+    cutouts = [PolygonOutline(points=[(round(x, 2), round(y, 2)) for x, y in list(r.coords)[:-1]])
+               for r in mm.interiors if len(r.coords) > 3]
+    if sum(pts[i - 1][0] * pts[i][1] - pts[i][0] * pts[i - 1][1] for i in range(len(pts))) < 0:
+        pts.reverse()
+    thread = THREAD.search(text)
+    screw = thread.group(1) or thread.group(2)
+    drill = CLEARANCE_HOLE.get(screw, 3.2)
+    stated = re.search(r"(\d*\.\d+|\d+)\s*DIA\.?\s*BOSS", text, re.I)
+    boss_d = round(float(stated.group(1)) * f, 2) if stated else round(2 * boss_r * f, 2)
+    if boss_d <= drill:  # only the screw hole is drawn round (finned boss): no meaningful diameter
+        boss_d = None
+    holes = [Hole(at=tr(c), drill=drill, boss_diameter=boss_d, screw=screw) for c in posts]
+    ext = Extraction(outline=PolygonOutline(points=pts), holes=holes, scale=f, cutouts=cutouts)
+    pattern = _as_pattern(holes)
+    if pattern:
+        ext.hole_pattern = pattern.model_copy(update={"boss_diameter": boss_d, "screw": screw})
+        ext.holes = []
+    ext.notes += [
+        f"Posts from the drawing callout: \"{text}\".",
+        f"Outline is the enclosed floor in the drawing shrunk by {clearance:g} mm from walls, ribs and other bosses"
+        + (", capped at the stated inside size" if inner_size else "") + "; it always covers its posts "
+        "(KiCrate-derived, not a manufacturer outline).",
+        f"PCB hole {drill:g} mm is the clearance for {screw}.",
+    ]
+    return ext

@@ -50,6 +50,8 @@ def document(enc: Enclosure, mount: PcbMount) -> ezdxf.document.Drawing:
     segs = outline_path(mount.outline)
     _add_segments(msp, segs, "OUTLINE")
     board_poly = flatten(segs)
+    for c in mount.cutouts:
+        _add_segments(msp, outline_path(c), "OUTLINE")
 
     for h in mount.all_holes():
         msp.add_circle(h.at, h.drill / 2, dxfattribs={"layer": "HOLES"})

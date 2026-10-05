@@ -41,8 +41,12 @@ def geometry_problems(enc: Enclosure) -> list[str]:
         except ValueError as e:
             problems.append(f"{where}: outline: {e}")
             continue
+        cut_polys = [flatten(outline_path(c)) for c in m.cutouts]
+        for c in cut_polys:
+            if not all(point_in_polygon(p, poly) for p in c):
+                problems.append(f"{where}: a cut-out crosses the board edge")
         for h in m.all_holes():
-            if not point_in_polygon(h.at, poly):
+            if not point_in_polygon(h.at, poly) or any(point_in_polygon(h.at, c) for c in cut_polys):
                 problems.append(f"{where}: hole at {h.at} is outside the board")
             elif distance_to_polygon(h.at, poly) < h.drill / 2:
                 problems.append(f"{where}: hole at {h.at} breaks the board edge")

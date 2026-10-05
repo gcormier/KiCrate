@@ -70,7 +70,8 @@ def _doc(body: list[str], box, title: str) -> str:
 def mount_svg(enc: Enclosure, mount: PcbMount) -> str:
     segs = outline_path(mount.outline)
     poly = flatten(segs)
-    body = [f'<path class="outline" d="{path_d(segs)}"/>']
+    d = " ".join([path_d(segs), *(path_d(outline_path(c)) for c in mount.cutouts)])
+    body = [f'<path class="outline" fill-rule="evenodd" d="{d}"/>']
     boxes = [bbox(poly)]
     if enc.inner:
         w, h = enc.inner.length / 2, enc.inner.width / 2

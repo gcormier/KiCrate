@@ -2,6 +2,7 @@
 mfr: bud
 part: PN-1342
 variants:
+- PN-1342-C
 - PN-1342-DG
 series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1342/
