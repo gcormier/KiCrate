@@ -11,18 +11,18 @@ url: https://www.hammfg.com/part/1455D601
 material: Aluminum (Extruded)
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1455D601
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455D601.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455D601.zip
   kind: cad
   sha256: 1c7e3d7496ff6a463a78f9a8260f73bf6f5aa95d52b1ab0a76b25b962a78fac3
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 60.0
   width: 45.0

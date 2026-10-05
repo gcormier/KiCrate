@@ -1,13 +1,13 @@
 # yaml-language-server: $schema=../../schema/enclosure.schema.json
 mfr: bud
-part: CU-1098
+part: CU-879
 series: UTILITY-CABINET
-url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-1098/
+url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-879/
 provenance: scraped
 verified: false
 last_checked: '2026-10-05'
 sources:
-- url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-1098/
+- url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-879/
   kind: product_page
   retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb728-1.pdf
@@ -18,14 +18,14 @@ sources:
   sha256: d8fceaa6245a9b90a4980f55fb1a3bfffe43adbec1d4a1c4fd50e1c0ecb2ba83
   retrieved: '2026-10-05'
 outer:
-  length: 152.4
-  width: 152.4
-  height: 152.4
+  length: 254.0
+  width: 203.2
+  height: 177.8
   note: Converted from inches.
 inner:
-  length: 127.0
-  width: 127.0
-  height: 150.876
+  length: 228.6
+  width: 177.8
+  height: 176.276
   note: Converted from inches.
 notes:
 - 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'

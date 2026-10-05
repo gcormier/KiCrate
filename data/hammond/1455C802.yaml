@@ -11,18 +11,18 @@ url: https://www.hammfg.com/part/1455C802
 material: Aluminum (Extruded)
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1455C802
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455C802.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455C802.zip
   kind: cad
   sha256: 0ea5b56e7ac32fd6786237a41668a926cf7886d0b2b1742ae74c607205322962
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 80.0
   width: 54.0

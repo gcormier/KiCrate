@@ -14,18 +14,18 @@ url: https://www.hammfg.com/part/1591XXDBK
 material: ABS Plastic
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1591XXDBK
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1591XXDBK.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1591XXDBK.zip
   kind: cad
   sha256: 68aa0f07b1df35ab4254aeabb4a3433744de0da5135dd414fde9b9fe8d7352cd
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 152.0
   width: 81.0

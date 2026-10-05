@@ -8,18 +8,18 @@ series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1327-mb/
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1327-mb/
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1327mb.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1327mb.dxf
   kind: cad
   sha256: 580748c8508a2194943c0daaa75280379647103395b99222c914271c77057f24
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 170.942
   width: 120.904

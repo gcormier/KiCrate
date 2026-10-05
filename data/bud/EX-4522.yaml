@@ -5,18 +5,18 @@ series: EXTRUDED-ALUMINUM-BOX
 url: https://www.budind.com/product/general-use-boxes/extruded-aluminum-box-series/ex-4522/
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.budind.com/product/general-use-boxes/extruded-aluminum-box-series/ex-4522/
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb4521.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb4521.dxf
   kind: cad
   sha256: e3e79c74a9d9e220e4015c3085c0fe7c2b0597bea46d093c1730c7269322878b
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 155.956
   width: 80.772

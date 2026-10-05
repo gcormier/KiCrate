@@ -9,18 +9,18 @@ url: https://www.hammfg.com/part/1455U2802
 material: Aluminum (Extruded)
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1455U2802
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455U2802.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455U2802.zip
   kind: cad
   sha256: d42af7e59097f852bafe3a85aff57b78d6f6c8357863c83ece0d9858fd845ae1
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 279.0
   width: 191.0
