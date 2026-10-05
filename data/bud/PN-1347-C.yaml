@@ -2,23 +2,24 @@
 mfr: bud
 part: PN-1347-C
 variants:
+- PN-1347
 - PN-1347-DG
 series: PN
-url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1347-c/
+url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1347/
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
-- url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1347-c/
+- url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1347/
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/HB-PN-1347.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/HB-PN-1347.dxf
   kind: cad
   sha256: ed1d50a8414e2b8b1cb81162c7c02005a93a6a6e680bd010dd32d0aa8cf3b4fc
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 359.918
   width: 249.936

@@ -137,9 +137,16 @@ def save_draft(enc: Enclosure, root: Path = DATA_DIR) -> str:
     """
     existing, _ = load_all(root)
     pns = {enc.part, *enc.variants}
+    merged_into = None
     for e in existing:
         if pns & {e.part, *e.variants} and e.part != enc.part:
-            return f"skipped: covered by {e.key}"
+            if e.verified or e.provenance != "scraped":
+                return f"skipped: covered by {e.key}"
+            # Same product group saved under another member's name (e.g. its page failed once):
+            # keep that file rather than starting a duplicate.
+            merged_into = e.key
+            enc = enc.model_copy(update={"part": e.part, "variants": sorted((pns | set(e.variants)) - {e.part})})
+            break
     path = root / enc.mfr / f"{enc.part}.yaml"
     status = "new"
     if path.exists():
@@ -147,6 +154,11 @@ def save_draft(enc: Enclosure, root: Path = DATA_DIR) -> str:
         if old.verified or old.provenance != "scraped":
             return f"skipped: {old.provenance}{' verified' if old.verified else ''} entry exists"
         status = "updated"
+        # A variant missing from this run is far more likely a failed fetch than a discontinued
+        # part; keep known variants so entries don't flap between runs.
+        variants = sorted(set(enc.variants) | set(old.variants) - {enc.part})
+        if variants != enc.variants:
+            enc = enc.model_copy(update={"variants": variants})
     problems = geometry_problems(enc)
     if problems:
         return "skipped: " + "; ".join(problems)
@@ -155,4 +167,4 @@ def save_draft(enc: Enclosure, root: Path = DATA_DIR) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = dump_yaml(enc)
     path.write_text(text)
-    return status
+    return f"{status} (into {merged_into})" if merged_into else status
