@@ -3,7 +3,6 @@ mfr: bud
 part: PN-1320-MB
 variants:
 - PN-1320-CMB
-- PN-1320-DGMB
 series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-with-mounting-brackets-pn-1320-mb/
 provenance: scraped

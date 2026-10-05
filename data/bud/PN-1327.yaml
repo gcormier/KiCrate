@@ -8,18 +8,18 @@ series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1327/
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1327/
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1327.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1327.dxf
   kind: cad
   sha256: fc939042c2a8c4d04a21651d4c4d18f2ed912b61238850f64381c500b3621791
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 170.942
   width: 120.904
