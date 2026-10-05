@@ -5,18 +5,18 @@ series: UTILITY-CABINET
 url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-729/
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.budind.com/product/general-use-boxes/utility-cabinet-series-cu/cu-729/
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb728-1.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb728.dxf
   kind: cad
   sha256: d8fceaa6245a9b90a4980f55fb1a3bfffe43adbec1d4a1c4fd50e1c0ecb2ba83
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 152.4
   width: 127.0

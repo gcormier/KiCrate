@@ -9,18 +9,18 @@ url: https://www.hammfg.com/part/1455T1602
 material: Aluminum (Extruded)
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1455T1602
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455T1602.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455T1602.zip
   kind: cad
   sha256: 65d8a54e7386a5afb78da94ba13fc94c60316f4fec832cc3cc1511f0920886cc
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 160.0
   width: 165.0

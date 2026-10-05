@@ -11,18 +11,18 @@ url: https://www.hammfg.com/part/1455B1202
 material: Aluminum (Extruded)
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1455B1202
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455B1202.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455B1202.zip
   kind: cad
   sha256: 81fb3812b4b4ba94cd139e16da574b96a2e86e10c670ea218a2bd04dea9983fc
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 120.0
   width: 72.0

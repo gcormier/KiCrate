@@ -11,18 +11,18 @@ url: https://www.hammfg.com/part/1455P1601
 material: Aluminum (Extruded)
 provenance: scraped
 verified: false
-last_checked: '2026-10-03'
+last_checked: '2026-10-05'
 sources:
 - url: https://www.hammfg.com/part/1455P1601
   kind: product_page
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455P1601.pdf
   kind: drawing
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455P1601.zip
   kind: cad
   sha256: 25c4990f29c4d889cf36497920450eb8dcbd7261f5d8a2ac80534d9eeae308ae
-  retrieved: '2026-10-03'
+  retrieved: '2026-10-05'
 outer:
   length: 160.0
   width: 125.0
