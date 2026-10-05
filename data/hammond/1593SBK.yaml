@@ -17,6 +17,7 @@ sources:
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1593SBK.pdf
   kind: drawing
+  sha256: f51c9416e6f29f1e9d2ec70bcdee4cd2259a3e8418b6a05e39a3a236d79f644a
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1593SBK.zip
   kind: cad
@@ -30,10 +31,38 @@ pcb_mounts:
 - id: main
   type: bosses
   outline:
-    shape: rect
-    size: [59.73, 48.89]
-    corner_radius: 0.0
+    shape: path
+    nodes:
+    - [29.87, 17.48]
+    - [29.87, -16.49]
+    - [25.15, -16.49]
+    - [21.89, -19.75, 22.84, -17.44]
+    - [21.89, -24.45]
+    - [-21.91, -24.45]
+    - [-21.91, -19.75]
+    - [-25.15, -16.49, -22.86, -17.44]
+    - [-29.87, -16.49]
+    - [-29.87, 17.48]
+    - [-25.15, 17.48]
+    - [-21.91, 20.74, -22.86, 18.44]
+    - [-21.91, 24.45]
+    - [21.89, 24.45]
+    - [21.89, 20.74]
+    - [25.15, 17.48, 22.84, 18.44]
+  holes:
+  - at: [-14.01, -13.5]
+    drill: 3.2
+    plated: false
+  - at: [-14.01, 14.5]
+    drill: 3.2
+    plated: false
+  - at: [13.99, -13.5]
+    drill: 3.2
+    plated: false
+  - at: [13.99, 14.5]
+    drill: 3.2
+    plated: false
   notes:
-  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
-    notches still need to be added.
+  - Outline and holes extracted from the manufacturer PDF drawing.
+  - From the vector PDF drawing (page 2).
   - 'Inside dims in drawing: width 60.895'

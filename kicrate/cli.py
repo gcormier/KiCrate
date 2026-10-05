@@ -102,7 +102,7 @@ def cmd_scrape(args) -> None:
     if args.mfr == "hammond":
         encs = hammond.scrape(args.series or list(hammond.SERIES), parts=args.parts, limit=args.limit)
     else:
-        encs = bud.scrape(args.series or bud.SERIES, limit=args.limit)
+        encs = bud.scrape(args.series or bud.SERIES, limit=args.limit, clearance=args.clearance)
     for enc in encs:
         status = "dry-run" if args.dry_run else data.save_draft(enc, Path(args.data))
         print(f"{enc.key}: {status}")
@@ -115,9 +115,18 @@ def cmd_extract(args) -> None:
 
     doc = extract.read_cad(Path(args.file))
     print(f"# view scales: {extract.view_scales(doc)}; inside dims: {extract.inside_dims(doc)}", file=sys.stderr)
-    ext = extract.find_board(doc, (args.length, args.width))
-    if not ext:
-        sys.exit(f"no closed outline of {args.length} x {args.width} mm found")
+    if args.posts:
+        found = extract.find_posts_boards(doc, (args.length, args.width), clearance=args.clearance)
+        if not found:
+            sys.exit(f"no PCB-post callout or {args.length} x {args.width} mm body view found")
+        mounts = [PcbMount(id=mid, type=args.type, outline=e.outline, holes=e.holes, hole_pattern=e.hole_pattern,
+                           cutouts=e.cutouts, notes=["Extracted from CAD with kicrate extract --posts.", *e.notes]) for mid, e in found]
+        print(data.yaml_text({"pcb_mounts": [m.model_dump(mode="json") for m in mounts]}))
+        return
+    else:
+        ext = extract.find_board(doc, (args.length, args.width))
+        if not ext:
+            sys.exit(f"no closed outline of {args.length} x {args.width} mm found")
     mount = PcbMount(id="main", type=args.type, outline=ext.outline, holes=ext.holes, hole_pattern=ext.hole_pattern,
                      notes=["Extracted from CAD with kicrate extract.", *ext.notes])
     print(data.yaml_text({"pcb_mounts": [mount.model_dump(mode="json")]}))
@@ -158,11 +167,14 @@ def main(argv: list[str] | None = None) -> None:
     sc.add_argument("--parts", nargs="*", help="only these part numbers")
     sc.add_argument("--limit", type=int, help="stop after N enclosures")
     sc.add_argument("--dry-run", action="store_true", help="do not write data files")
+    sc.add_argument("--clearance", type=float, default=2.0, help="mm from walls/ribs when deriving outlines from posts (Bud)")
     sc.set_defaults(fn=cmd_scrape)
     ex = sub.add_parser("extract", help="find a PCB outline + holes in a DWG/DXF file")
     ex.add_argument("file")
-    ex.add_argument("length", type=float, help="max PCB length (mm)")
-    ex.add_argument("width", type=float, help="max PCB width (mm)")
+    ex.add_argument("length", type=float, help="max PCB length (mm), or outer box length with --posts")
+    ex.add_argument("width", type=float, help="max PCB width (mm), or outer box width with --posts")
+    ex.add_argument("--posts", action="store_true", help="derive the board from the drawing's PCB posts and floor")
+    ex.add_argument("--clearance", type=float, default=2.0, help="mm from walls/ribs with --posts")
     ex.add_argument("--type", default="bosses", choices=["bosses", "card_guide_slots", "floor", "lid"])
     ex.set_defaults(fn=cmd_extract)
     args = p.parse_args(argv)

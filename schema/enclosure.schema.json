@@ -795,6 +795,32 @@
           "title": "Keepouts",
           "type": "array"
         },
+        "cutouts": {
+          "description": "Internal cut-outs (e.g. around bosses that aren't posts)",
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "path": "#/$defs/PathOutline",
+                "polygon": "#/$defs/PolygonOutline",
+                "rect": "#/$defs/RectOutline"
+              },
+              "propertyName": "shape"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/RectOutline"
+              },
+              {
+                "$ref": "#/$defs/PolygonOutline"
+              },
+              {
+                "$ref": "#/$defs/PathOutline"
+              }
+            ]
+          },
+          "title": "Cutouts",
+          "type": "array"
+        },
         "slots": {
           "anyOf": [
             {

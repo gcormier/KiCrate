@@ -127,3 +127,95 @@ def test_save_draft_ignores_date_only_changes(tmp_path):
     assert (tmp_path / "bud" / "X-1.yaml").read_text() == before
     assert data.save_draft(enc(5, height=11.0), tmp_path) == "updated"
     assert "2026-10-05" in (tmp_path / "bud" / "X-1.yaml").read_text()
+
+
+def _pdf_board(scale=1.0):
+    """1593V-style PCB page: 98 x 48, R2 corners, 4 x dia 3.2 on 71.12 x 40.64; curves flattened like Hammond's PDFs."""
+    import math
+
+    import pymupdf
+
+    k = 72 / 25.4 * scale  # mm -> pt
+    ox, oy = 300, 300
+    P = lambda x, y: pymupdf.Point(ox + x * k, oy - y * k)  # noqa: E731
+    doc = pymupdf.open()
+    page = doc.new_page(width=792, height=612)
+    pts = []
+    for cx, cy, a0 in ((47, -22, -90), (47, 22, 0), (-47, 22, 90), (-47, -22, 180)):
+        for i in range(9):  # flattened R2 corner
+            a = math.radians(a0 + 90 * i / 8)
+            pts.append(P(cx + 2 * math.cos(a), cy + 2 * math.sin(a)))
+    page.draw_polyline(pts + [pts[0]])
+    for x in (-35.56, 35.56):
+        for y in (-20.32, 20.32):
+            ring = [P(x + 1.6 * math.cos(2 * math.pi * i / 32), y + 1.6 * math.sin(2 * math.pi * i / 32)) for i in range(32)]
+            page.draw_polyline(ring + [ring[0]])
+    page.draw_circle(P(0, 0), 1.0 * k)  # a Bezier circle: also a hole
+    page.draw_rect(pymupdf.Rect(20, 20, 772, 592))  # sheet border must not match
+    return doc.tobytes()
+
+
+@pytest.mark.parametrize("scale", [1.0, 0.6])
+def test_pdf_board_flattened(scale):
+    ext = extract.find_board_pdf(_pdf_board(scale), (98, 48))
+    assert ext is not None
+    xs = [n[0] for n in ext.outline.nodes]
+    ys = [n[1] for n in ext.outline.nodes]
+    assert max(xs) - min(xs) == pytest.approx(98, abs=0.05) and max(ys) - min(ys) == pytest.approx(48, abs=0.05)
+    assert sum(len(n) == 4 for n in ext.outline.nodes) == 4  # corners rebuilt as arcs
+    drills = sorted(h.drill for h in ext.holes)
+    # 5 holes (4 + the Bezier one) -> no 4-hole pattern; check sizes and the corner ones' positions.
+    assert drills == pytest.approx([2.0, 3.2, 3.2, 3.2, 3.2], abs=0.02)
+    corners = sorted(h.at for h in ext.holes if h.drill > 3)
+    assert corners[0] == pytest.approx((-35.56, -20.32), abs=0.05)
+
+
+def _posts_dxf(tmp_path):
+    """Bud-style top view (inches): outer wall, inner wall with a rib, 4 finned M3 posts + a callout."""
+    doc = ezdxf.new("R2010")
+    msp = doc.modelspace()
+    msp.add_lwpolyline([(-1.25, -2.25), (1.25, -2.25), (1.25, 2.25), (-1.25, 2.25)], close=True)  # outer 2.5 x 4.5 in
+    # inner wall 2.2 x 4.2 with a 0.1 x 0.1 rib on the right wall at y=0
+    msp.add_lwpolyline([(-1.1, -2.1), (1.1, -2.1), (1.1, -0.05), (1.0, -0.05), (1.0, 0.05), (1.1, 0.05),
+                        (1.1, 2.1), (-1.1, 2.1)], close=True)
+    for x in (-0.55, 0.55):
+        for y in (-1.85, 1.85):
+            msp.add_circle((x, y), 0.156)  # boss
+            msp.add_circle((x, y), 0.094)  # insert
+    msp.add_circle((0, 1.0), 0.2)  # some other boss: an obstacle
+    msp.add_mtext("0.312 DIA. BOSS WITH M3 x 0.188 LG. THREADED INSERT (4) PLACES").set_location((2.0, -3.0))
+    msp.add_leader([(-0.55 - 0.156, -1.85), (-1.6, -3.0), (1.9, -3.0)])
+    path = tmp_path / "posts.dxf"
+    doc.saveas(path)
+    return extract.read_cad(path)
+
+
+@pytest.mark.parametrize("clearance", [2.0, 1.0])
+def test_posts_board(tmp_path, clearance):
+    from shapely.geometry import Point, Polygon
+
+    found = extract.find_posts_boards(_posts_dxf(tmp_path), (114.3, 63.5), clearance=clearance)
+    assert len(found) == 1
+    mid, ext = found[0]
+    assert ext.hole_pattern.pitch == pytest.approx((94.0, 27.94), abs=0.05)
+    assert ext.hole_pattern.drill == 3.2 and ext.hole_pattern.screw == "M3"
+    assert ext.hole_pattern.boss_diameter == pytest.approx(7.92, abs=0.02)
+    board = Polygon(ext.outline.points, [c.points for c in ext.cutouts])
+    xs = [p[0] for p in ext.outline.points]
+    ys = [p[1] for p in ext.outline.points]
+    # 4.2 x 2.2 in floor minus the clearance each side (long side on X).
+    assert max(xs) - min(xs) == pytest.approx(4.2 * 25.4 - 2 * clearance, abs=0.15)
+    assert max(ys) - min(ys) == pytest.approx(2.2 * 25.4 - 2 * clearance, abs=0.15)
+    # The obstacle boss (r 5.08 mm; drawing (0, 1 in) -> board (-25.4, 0) mm) becomes a cut-out.
+    assert len(ext.cutouts) == 1
+    obstacle = Point(-25.4, 0).buffer(5.08)
+    assert board.distance(obstacle) == pytest.approx(clearance, abs=0.15)
+    # The rib (2.54 mm proud of the y-min wall after rotation) is cleared too.
+    assert min(ys) > -(1.1 * 25.4) + clearance - 0.15
+
+
+def test_posts_board_needs_callout(tmp_path):
+    doc = _posts_dxf(tmp_path)
+    for e in doc.modelspace().query("MTEXT"):
+        e.text = "M4 x 0.315 LG. THREADED INSERT (4) PLACES"  # cover screws, not PCB posts
+    assert extract.find_posts_boards(doc, (114.3, 63.5)) == []

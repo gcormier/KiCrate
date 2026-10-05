@@ -17,6 +17,7 @@ sources:
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1593XBK.pdf
   kind: drawing
+  sha256: 736ac9b780fa2272c2e34dd4477a6b42f2408f5b69a8955f50904a9f6b1dc16b
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1593XBK.zip
   kind: cad
@@ -30,9 +31,53 @@ pcb_mounts:
 - id: main
   type: bosses
   outline:
-    shape: rect
-    size: [130.66, 56.61]
-    corner_radius: 0.0
+    shape: path
+    nodes:
+    - [65.32, 28.31]
+    - [65.32, -28.31]
+    - [32.55, -28.31]
+    - [32.55, -25.01]
+    - [25.93, -25.01, 29.23, -21.69]
+    - [25.93, -28.31]
+    - [-25.93, -28.31]
+    - [-25.93, -25.01]
+    - [-32.55, -25.01, -29.25, -21.69]
+    - [-32.55, -28.31]
+    - [-65.32, -28.31]
+    - [-65.32, 28.31]
+    - [-32.55, 28.31]
+    - [-32.55, 25.01]
+    - [-25.93, 25.01, -29.25, 21.69]
+    - [-25.93, 28.31]
+    - [25.93, 28.31]
+    - [25.93, 25.01]
+    - [32.55, 25.01, 29.23, 21.69]
+    - [32.55, 28.31]
+  holes:
+  - at: [-50.75, -14.0]
+    drill: 3.2
+    plated: false
+  - at: [-50.75, 14.0]
+    drill: 3.2
+    plated: false
+  - at: [-20.26, -14.0]
+    drill: 3.2
+    plated: false
+  - at: [-20.26, 14.0]
+    drill: 3.2
+    plated: false
+  - at: [20.25, -14.0]
+    drill: 3.2
+    plated: false
+  - at: [20.25, 14.0]
+    drill: 3.2
+    plated: false
+  - at: [50.74, -14.0]
+    drill: 3.2
+    plated: false
+  - at: [50.74, 14.0]
+    drill: 3.2
+    plated: false
   notes:
-  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
-    notches still need to be added.
+  - Outline and holes extracted from the manufacturer PDF drawing.
+  - From the vector PDF drawing (page 2).

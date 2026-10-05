@@ -2,9 +2,10 @@
 
 Bud publishes a PDF and DXF drawing per product but no max-PCB figure, and
 most drawings show bosses/ribs that need judgement to turn into a board
-outline. So this records what can be trusted (dimensions, drawing and CAD
-links with hashes) and leaves `pcb_mounts` empty for a human to fill in
-(see CONTRIBUTING.md; `kicrate extract` helps with the DXF).
+outline. Where the DXF calls out PCB posts ("... BOSS WITH M3 ... INSERT")
+the board is derived deterministically: the enclosed floor shrunk by a
+clearance (default 2 mm) from walls, ribs and other bosses
+(extract.find_posts_board). Otherwise only dimensions and links are kept.
 """
 
 from __future__ import annotations
@@ -14,7 +15,11 @@ import hashlib
 import html
 import re
 
-from ..schema import Box3, Enclosure, Source
+import tempfile
+from pathlib import Path
+
+from .. import extract
+from ..schema import Box3, Enclosure, PcbMount, Source
 from .http import get
 
 BASE = "https://www.budind.com"
@@ -64,7 +69,18 @@ def product(url: str) -> dict | None:
     }
 
 
-def scrape(series_list: list[str], limit: int | None = None, log=print) -> list[Enclosure]:
+def posts_mounts(blob: bytes, outer, inner, clearance: float) -> list[PcbMount]:
+    """Boards derived from the DXF's PCB posts and floor (see extract.find_posts_boards)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "drawing.dxf"
+        path.write_bytes(blob)
+        found = extract.find_posts_boards(extract.read_cad(path), outer[:2], clearance=clearance,
+                                          inner_size=inner[:2] if inner else None)
+    return [PcbMount(id=mid, type="bosses", outline=ext.outline, holes=ext.holes, hole_pattern=ext.hole_pattern,
+                     cutouts=ext.cutouts, notes=[*ext.notes, "Walls are drafted; check against a real box."]) for mid, ext in found]
+
+
+def scrape(series_list: list[str], limit: int | None = None, log=print, clearance: float = 2.0) -> list[Enclosure]:
     today = dt.date.today()
     out: list[Enclosure] = []
     for series in series_list:
@@ -88,9 +104,14 @@ def scrape(series_list: list[str], limit: int | None = None, log=print) -> list[
             sources = [Source(url=rep["url"], kind="product_page", retrieved=today)]
             if "pdf" in rep["files"]:
                 sources.append(Source(url=rep["files"]["pdf"], kind="drawing", retrieved=today))
+            mounts = []
             if "dxf" in rep["files"]:
                 blob = get(rep["files"]["dxf"])
                 sources.append(Source(url=rep["files"]["dxf"], kind="cad", sha256=hashlib.sha256(blob).hexdigest(), retrieved=today))
+                try:
+                    mounts = posts_mounts(blob, rep["outer"], rep["inner"], clearance)
+                except Exception as e:  # noqa: BLE001 - a bad drawing must not stop the run
+                    log(f"  {rep['pn']}: DXF analysis failed: {e}")
             o, i = rep["outer"], rep["inner"]
             enc = Enclosure(
                 mfr="bud",
@@ -106,8 +127,9 @@ def scrape(series_list: list[str], limit: int | None = None, log=print) -> list[
                 sources=sources,
                 outer=Box3(length=o[0], width=o[1], height=o[2], note="Converted from inches."),
                 inner=Box3(length=i[0], width=i[1], height=i[2], note="Converted from inches.") if i else None,
-                notes=["PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help)."],
+                pcb_mounts=mounts,
+                notes=[] if mounts else ["PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help)."],
             )
-            log(f"  {enc.part} (+{len(enc.variants)} variants)")
+            log(f"  {enc.part} (+{len(enc.variants)} variants){f': {len(mounts)} board(s) from DXF posts' if mounts else ''}")
             out.append(enc)
     return out
