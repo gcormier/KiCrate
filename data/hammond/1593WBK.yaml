@@ -17,6 +17,7 @@ sources:
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1593WBK.pdf
   kind: drawing
+  sha256: 26ce1f1683ccceaf9e2545be50b89ce06b2ba29df03a6ffd80b5c0b798ad7519
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1593WBK.zip
   kind: cad
@@ -30,10 +31,72 @@ pcb_mounts:
 - id: main
   type: bosses
   outline:
-    shape: rect
-    size: [100.0, 98.0]
-    corner_radius: 0.0
+    shape: path
+    nodes:
+    - [-48.02, 39.03]
+    - [-50.0, 36.98, -49.58, 38.25]
+    - [-50.0, -37.01]
+    - [-48.02, -39.03, -49.26, -38.57]
+    - [-44.0, -39.03]
+    - [-38.99, -44.0, -40.47, -40.47]
+    - [-38.99, -47.04]
+    - [-37.01, -49.01, -38.25, -48.59]
+    - [37.01, -49.01]
+    - [39.03, -47.04, 38.57, -48.24]
+    - [39.03, -44.0]
+    - [44.04, -39.03, 40.47, -40.47]
+    - [48.02, -39.03]
+    - [50.0, -37.01, 49.58, -38.25]
+    - [50.0, 36.98]
+    - [48.02, 39.03, 49.29, 38.57]
+    - [44.04, 39.03]
+    - [39.03, 44.0, 40.47, 40.47]
+    - [39.03, 47.04]
+    - [37.01, 49.01, 38.29, 48.59]
+    - [-37.01, 49.01]
+    - [-38.99, 47.04, -38.57, 48.24]
+    - [-38.99, 44.0]
+    - [-44.0, 39.03, -40.47, 40.47]
+  holes:
+  - at: [-45.71, -35.57]
+    drill: 3.2
+    plated: false
+  - at: [-45.71, 35.57]
+    drill: 3.2
+    plated: false
+  - at: [-20.31, -35.57]
+    drill: 3.2
+    plated: false
+  - at: [-20.31, 35.57]
+    drill: 3.2
+    plated: false
+  - at: [-5.06, -35.57]
+    drill: 3.2
+    plated: false
+  - at: [-5.06, 35.57]
+    drill: 3.2
+    plated: false
+  - at: [5.09, -35.57]
+    drill: 3.2
+    plated: false
+  - at: [5.09, 35.57]
+    drill: 3.2
+    plated: false
+  - at: [20.34, -35.57]
+    drill: 3.2
+    plated: false
+  - at: [20.34, 35.57]
+    drill: 3.2
+    plated: false
+  - at: [45.74, -35.57]
+    drill: 3.2
+    plated: false
+  - at: [45.74, 35.57]
+    drill: 3.2
+    plated: false
   notes:
-  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
-    notches still need to be added.
+  - Outline and holes extracted from the manufacturer PDF drawing.
+  - Drawing shows 2 boards of this size; took the one with the most holes (12).
+  - PCB view drawn at 0.6:1; scaled to real size.
+  - From the vector PDF drawing (page 2).
   - 'Inside dims in drawing: width 98.354'

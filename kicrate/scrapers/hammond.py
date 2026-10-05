@@ -91,9 +91,6 @@ def build_entry(series: str, pages: list[PartPage], today: dt.date) -> Enclosure
     a = rep.attrs
     notes: list[str] = []
     sources = [Source(url=f"{BASE}/part/{rep.pn}", kind="product_page", retrieved=today)]
-    if "pdf" in rep.files:
-        sources.append(Source(url=rep.files["pdf"], kind="drawing", retrieved=today))
-
     ext = inner = None
     if "dxf" in rep.files:
         blob = get(rep.files["dxf"])
@@ -114,13 +111,28 @@ def build_entry(series: str, pages: list[PartPage], today: dt.date) -> Enclosure
                 except Exception as e:  # noqa: BLE001 - a bad drawing must not stop the run
                     notes.append(f"CAD extraction failed: {e}")
 
+    from_pdf = False
+    if "pdf" in rep.files:
+        drawing = Source(url=rep.files["pdf"], kind="drawing", retrieved=today)
+        if not ext:
+            # Newer drawings put the "max recommended PCB" on a second PDF page that the DWG lacks.
+            blob = get(rep.files["pdf"])
+            drawing.sha256 = hashlib.sha256(blob).hexdigest()
+            try:
+                ext = extract.find_board_pdf(blob, pcb)
+                from_pdf = ext is not None
+            except Exception as e:  # noqa: BLE001
+                notes.append(f"PDF extraction failed: {e}")
+        sources.insert(1, drawing)
+
     if ext:
         outline, holes, pattern = ext.outline, ext.holes, ext.hole_pattern
-        notes = ["Outline and holes extracted from the manufacturer DWG.", *ext.notes, *notes]
+        src = "PDF drawing" if from_pdf else "DWG"
+        notes = [f"Outline and holes extracted from the manufacturer {src}.", *ext.notes, *notes]
     else:
         outline = RectOutline(size=(max(pcb), min(pcb)))
         holes, pattern = [], None
-        notes = ["Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. "
+        notes = ["Outline is the max PCB size from Hammond part attributes; no PCB view found in the DWG or PDF. "
                  "Mounting holes, bosses and notches still need to be added.", *notes]
 
     mount = PcbMount(id="main", type=SERIES.get(series, "bosses"), outline=outline, holes=holes, hole_pattern=pattern, notes=notes)

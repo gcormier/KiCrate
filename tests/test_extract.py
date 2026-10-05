@@ -127,3 +127,44 @@ def test_save_draft_ignores_date_only_changes(tmp_path):
     assert (tmp_path / "bud" / "X-1.yaml").read_text() == before
     assert data.save_draft(enc(5, height=11.0), tmp_path) == "updated"
     assert "2026-10-05" in (tmp_path / "bud" / "X-1.yaml").read_text()
+
+
+def _pdf_board(scale=1.0):
+    """1593V-style PCB page: 98 x 48, R2 corners, 4 x dia 3.2 on 71.12 x 40.64; curves flattened like Hammond's PDFs."""
+    import math
+
+    import pymupdf
+
+    k = 72 / 25.4 * scale  # mm -> pt
+    ox, oy = 300, 300
+    P = lambda x, y: pymupdf.Point(ox + x * k, oy - y * k)  # noqa: E731
+    doc = pymupdf.open()
+    page = doc.new_page(width=792, height=612)
+    pts = []
+    for cx, cy, a0 in ((47, -22, -90), (47, 22, 0), (-47, 22, 90), (-47, -22, 180)):
+        for i in range(9):  # flattened R2 corner
+            a = math.radians(a0 + 90 * i / 8)
+            pts.append(P(cx + 2 * math.cos(a), cy + 2 * math.sin(a)))
+    page.draw_polyline(pts + [pts[0]])
+    for x in (-35.56, 35.56):
+        for y in (-20.32, 20.32):
+            ring = [P(x + 1.6 * math.cos(2 * math.pi * i / 32), y + 1.6 * math.sin(2 * math.pi * i / 32)) for i in range(32)]
+            page.draw_polyline(ring + [ring[0]])
+    page.draw_circle(P(0, 0), 1.0 * k)  # a Bezier circle: also a hole
+    page.draw_rect(pymupdf.Rect(20, 20, 772, 592))  # sheet border must not match
+    return doc.tobytes()
+
+
+@pytest.mark.parametrize("scale", [1.0, 0.6])
+def test_pdf_board_flattened(scale):
+    ext = extract.find_board_pdf(_pdf_board(scale), (98, 48))
+    assert ext is not None
+    xs = [n[0] for n in ext.outline.nodes]
+    ys = [n[1] for n in ext.outline.nodes]
+    assert max(xs) - min(xs) == pytest.approx(98, abs=0.05) and max(ys) - min(ys) == pytest.approx(48, abs=0.05)
+    assert sum(len(n) == 4 for n in ext.outline.nodes) == 4  # corners rebuilt as arcs
+    drills = sorted(h.drill for h in ext.holes)
+    # 5 holes (4 + the Bezier one) -> no 4-hole pattern; check sizes and the corner ones' positions.
+    assert drills == pytest.approx([2.0, 3.2, 3.2, 3.2, 3.2], abs=0.02)
+    corners = sorted(h.at for h in ext.holes if h.drill > 3)
+    assert corners[0] == pytest.approx((-35.56, -20.32), abs=0.05)

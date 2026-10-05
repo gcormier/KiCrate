@@ -18,6 +18,7 @@ sources:
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/pdf/1455K1601.pdf
   kind: drawing
+  sha256: 1ba22782a444efede190d2658e64a78187fa4a88e945559616c4a89a9431e2ad
   retrieved: '2026-10-05'
 - url: https://www.hammfg.com/files/parts/dxf/1455K1601.zip
   kind: cad
@@ -35,5 +36,5 @@ pcb_mounts:
     size: [159.0, 74.0]
     corner_radius: 0.0
   notes:
-  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the drawing. Mounting holes, bosses and
-    notches still need to be added.
+  - Outline is the max PCB size from Hammond part attributes; no PCB view found in the DWG or PDF. Mounting holes, bosses
+    and notches still need to be added.

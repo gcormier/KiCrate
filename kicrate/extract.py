@@ -71,8 +71,8 @@ class Extraction:
     notes: list[str] = field(default_factory=list)
 
 
-def _k(p) -> tuple[int, int]:
-    return (round(p[0] / KEY), round(p[1] / KEY))
+def _k(p, key: float = KEY) -> tuple[int, int]:
+    return (round(p[0] / key), round(p[1] / key))
 
 
 def _segments(msp) -> list[Seg]:
@@ -100,19 +100,19 @@ def _segments(msp) -> list[Seg]:
     return segs
 
 
-def closed_loops(segs: list[Seg]) -> list[Loop]:
+def closed_loops(segs: list[Seg], key: float = KEY) -> list[Loop]:
     """Components where every endpoint joins exactly two segments."""
     at: dict[tuple[int, int], list[int]] = defaultdict(list)
     for i, s in enumerate(segs):
-        at[_k(s.a)].append(i)
-        at[_k(s.b)].append(i)
+        at[_k(s.a, key)].append(i)
+        at[_k(s.b, key)].append(i)
     used: set[int] = set()
     loops = []
     for start in range(len(segs)):
         if start in used:
             continue
-        ok, i, node = True, start, _k(segs[start].b)
-        first = _k(segs[start].a)
+        ok, i, node = True, start, _k(segs[start].b, key)
+        first = _k(segs[start].a, key)
         seen = {start}
         oriented = [segs[start]]
         while True:
@@ -127,11 +127,11 @@ def closed_loops(segs: list[Seg]) -> list[Loop]:
                 ok = False
                 break
             s = segs[j]
-            if _k(s.a) != node:  # orient along the walk
+            if _k(s.a, key) != node:  # orient along the walk
                 s = Seg(s.b, s.a, s.mid)
             oriented.append(s)
             seen.add(j)
-            i, node = j, _k(s.b)
+            i, node = j, _k(s.b, key)
         used |= seen
         if ok and node == first and len(oriented) >= 2:
             loops.append(Loop(oriented, _flatten(oriented)))
@@ -163,16 +163,22 @@ def find_board(doc, size: tuple[float, float]) -> Extraction | None:
     loops = closed_loops(_segments(msp))
     circles = [(e.dxf.center.x, e.dxf.center.y, e.dxf.radius) for e in msp.query("CIRCLE")
                if not SKIP_LAYERS.search(e.dxf.get("layer", ""))]
+    return _board_from(loops, circles, size, view_scales(doc))
+
+
+def _board_from(loops: list[Loop], circles, size, scales, tol: float = TOL, digits: int = 3) -> Extraction | None:
+    """Pick the loop matching `size` at one of `scales` (drawing units -> mm), plus holes inside it."""
     want = sorted(size, reverse=True)
-    best = None
-    for f in view_scales(doc):
+    best, matches = None, set()
+    for f in scales:
         for lp in loops:
             x0, y0, x1, y1 = lp.bbox
             w, h = (x1 - x0) * f, (y1 - y0) * f
-            if abs(max(w, h) - want[0]) > TOL or abs(min(w, h) - want[1]) > TOL:
+            if abs(max(w, h) - want[0]) > tol or abs(min(w, h) - want[1]) > tol:
                 continue
             inside = [c for c in circles if point_in_polygon((c[0], c[1]), lp.poly) and c[2] * f < want[1] / 4]
-            score = (len(inside), f == 1.0)
+            matches.add(id(lp))
+            score = (len(inside), f == scales[0])
             if best is None or score > best[0]:
                 best = (score, lp, f, inside, h > w)
     if not best:
@@ -183,20 +189,124 @@ def find_board(doc, size: tuple[float, float]) -> Extraction | None:
 
     def tr(p):  # drawing -> board coords, longer side along X
         x, y = (p[0] - cx) * f, (p[1] - cy) * f
-        return (round(-y, 3), round(x, 3)) if rotate else (round(x, 3), round(y, 3))
+        return (round(-y, digits), round(x, digits)) if rotate else (round(x, digits), round(y, digits))
 
     ext = Extraction(outline=_outline(lp, tr), scale=f)
     holes: dict[tuple[float, float], float] = {}
-    for x, y, r in inside:  # keep the smallest of concentric circles
+    for x, y, r in inside:  # keep the smallest of (near-)concentric circles
         c = tr((x, y))
-        holes[c] = min(holes.get(c, math.inf), round(2 * r * f, 3))
+        c = next((k for k in holes if math.dist(k, c) < 0.1), c)
+        holes[c] = min(holes.get(c, math.inf), round(2 * r * f, digits))
     ext.holes = [Hole(at=c, drill=d) for c, d in sorted(holes.items())]
     ext.hole_pattern = _as_pattern(ext.holes)
     if ext.hole_pattern:
         ext.holes = []
-    if f != 1.0:
-        ext.notes.append(f"PCB view drawn at {1 / f:g}:1; scaled to real size.")
+    if len(matches) > 1:
+        ext.notes.append(f"Drawing shows {len(matches)} boards of this size; took the one with the most holes ({len(inside)}).")
+    if f != scales[0]:
+        ext.notes.append(f"PCB view drawn at {scales[0] / f:.3g}:1; scaled to real size.")
     return ext
+
+
+PT = 25.4 / 72  # PDF point in mm
+
+
+def find_board_pdf(pdf: bytes | Path, size: tuple[float, float]) -> Extraction | None:
+    """Same search over a vector PDF drawing (curves arrive flattened into short lines)."""
+    import pymupdf
+
+    doc = pymupdf.open(stream=pdf, filetype="pdf") if isinstance(pdf, bytes) else pymupdf.open(pdf)
+    # Hammond labels the board page "MAX RECOMMENDED PCB SIZE"; other views (inside bottom) can
+    # have an inner wall of the same size, so try labelled pages first.
+    pcb_page = re.compile(r"MAX(IMUM)?\s+(RECOMMENDED\s+)?PCB\s+SIZE|MAX\s+SIZE\s+PCB", re.I)
+    pages = sorted(doc, key=lambda pg: not pcb_page.search(pg.get_text()))
+    for page in pages:
+        segs = []
+        for path in page.get_drawings():
+            for it in path["items"]:
+                if it[0] == "l":
+                    a, b = (it[1].x, -it[1].y), (it[2].x, -it[2].y)  # PDF y points down
+                    if math.dist(a, b) > 1e-6:
+                        segs.append(Seg(a, b))
+                elif it[0] == "c":
+                    p0, p1, p2, p3 = it[1:5]
+                    mid = (0.125 * (p0.x + 3 * p1.x + 3 * p2.x + p3.x), -0.125 * (p0.y + 3 * p1.y + 3 * p2.y + p3.y))
+                    segs.append(Seg((p0.x, -p0.y), (p3.x, -p3.y), mid))
+                elif it[0] == "re":
+                    r = it[1]
+                    c = [(r.x0, -r.y0), (r.x1, -r.y0), (r.x1, -r.y1), (r.x0, -r.y1)]
+                    segs += [Seg(c[i - 1], c[i]) for i in range(4)]
+        loops = closed_loops(segs, key=0.05)
+        circles, others = [], []
+        for lp in loops:
+            x0, y0, x1, y1 = lp.bbox
+            w, h = x1 - x0, y1 - y0
+            if (len(lp.segs) >= 8 or all(sg.mid for sg in lp.segs)) and w > 0 and abs(w - h) < 0.03 * w and _is_round(lp):
+                # Flattened circle: vertices lie on the circle, so their mean is the centre.
+                pts = [s.a for s in lp.segs]
+                c = (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts))
+                circles.append((*c, sum(math.dist(p, c) for p in pts) / len(pts)))
+            else:
+                others.append(_rebuild_arcs(lp))
+        # 1:1 first; otherwise a view scale implied by a loop of the right proportions that has holes in it.
+        scales = [PT]
+        want = sorted(size, reverse=True)
+        for lp in others:
+            x0, y0, x1, y1 = lp.bbox
+            long_, short_ = max(x1 - x0, y1 - y0), min(x1 - x0, y1 - y0)
+            if short_ > 0 and abs(long_ / short_ - want[0] / want[1]) < 0.01 * want[0] / want[1] \
+                    and any(point_in_polygon(c[:2], lp.poly) for c in circles):
+                scales.append(want[0] / long_)
+        ext = _board_from(others, circles, size, scales, tol=0.4, digits=2)
+        if ext:
+            # Flattening noise is ~0.02 mm; drawings dimension holes in 0.05 mm steps.
+            snap = lambda d: round(round(d / 0.05) * 0.05, 2) if abs(d - round(d / 0.05) * 0.05) <= 0.02 else d  # noqa: E731
+            ext.holes = [h.model_copy(update={"drill": snap(h.drill)}) for h in ext.holes]
+            if ext.hole_pattern:
+                ext.hole_pattern = ext.hole_pattern.model_copy(update={"drill": snap(ext.hole_pattern.drill),
+                                                                      "pitch": tuple(round(v, 2) for v in ext.hole_pattern.pitch)})
+            ext.notes.append(f"From the vector PDF drawing (page {page.number + 1}).")
+            return ext
+    return None
+
+
+def _is_round(lp: Loop) -> bool:
+    x0, y0, x1, y1 = lp.bbox
+    c, r = ((x0 + x1) / 2, (y0 + y1) / 2), (x1 - x0 + y1 - y0) / 4
+    return all(abs(math.dist(p, c) - r) < 0.05 * r for p in lp.poly)
+
+
+def _rebuild_arcs(lp: Loop, short: float = 1.2 / PT) -> Loop:
+    """Turn runs of short flattened segments back into arcs (start, mid, end)."""
+    segs = lp.segs
+    n = len(segs)
+    is_short = [s.mid is None and math.dist(s.a, s.b) < short for s in segs]
+    if all(is_short) or not any(is_short):
+        return lp
+    # Rotate so we start at a long segment; then group consecutive short ones.
+    k = is_short.index(False)
+    segs, is_short = segs[k:] + segs[:k], is_short[k:] + is_short[:k]
+    out: list[Seg] = []
+    i = 0
+    while i < n:
+        if not is_short[i]:
+            out.append(segs[i])
+            i += 1
+            continue
+        j = i
+        while j < n and is_short[j]:
+            j += 1
+        run = segs[i:j]
+        pts = [run[0].a] + [s.b for s in run]
+        a, b, m = pts[0], pts[-1], pts[len(pts) // 2]
+        chord = math.dist(a, b)
+        sag = abs((b[0] - a[0]) * (m[1] - a[1]) - (b[1] - a[1]) * (m[0] - a[0])) / chord if chord else 0
+        if len(run) >= 2 and sag > 0.02 * chord:
+            out.append(Seg(a, b, m))
+        else:
+            out.append(Seg(a, b))  # straight after all
+        i = j
+    return Loop(out, _flatten(out))
 
 
 def _outline(lp: Loop, tr) -> RectOutline | PathOutline:
@@ -216,15 +326,18 @@ def _outline(lp: Loop, tr) -> RectOutline | PathOutline:
     return PathOutline(nodes=nodes)
 
 
-def _as_pattern(holes: list[Hole]) -> HolePattern | None:
-    if len(holes) != 4 or len({h.drill for h in holes}) != 1:
+def _as_pattern(holes: list[Hole], tol: float = 0.05) -> HolePattern | None:
+    """Four equal holes symmetric about the centre (within `tol`) -> a centred pattern."""
+    if len(holes) != 4 or max(h.drill for h in holes) - min(h.drill for h in holes) > tol:
         return None
-    xs = sorted({abs(h.at[0]) for h in holes})
-    ys = sorted({abs(h.at[1]) for h in holes})
-    pts = {(round(h.at[0], 2), round(h.at[1], 2)) for h in holes}
-    if len(xs) == 1 and len(ys) == 1 and pts == {(sx * round(xs[0], 2), sy * round(ys[0], 2)) for sx in (-1, 1) for sy in (-1, 1)}:
-        return HolePattern(pitch=(round(2 * xs[0], 3), round(2 * ys[0], 3)), drill=holes[0].drill)
-    return None
+    ax = [abs(h.at[0]) for h in holes]
+    ay = [abs(h.at[1]) for h in holes]
+    if max(ax) - min(ax) > tol or max(ay) - min(ay) > tol:
+        return None
+    if {(h.at[0] > 0, h.at[1] > 0) for h in holes} != {(a, b) for a in (False, True) for b in (False, True)}:
+        return None
+    hx, hy = sum(ax) / 4, sum(ay) / 4
+    return HolePattern(pitch=(round(2 * hx, 3), round(2 * hy, 3)), drill=round(sum(h.drill for h in holes) / 4, 3))
 
 
 INSIDE = re.compile(r"INSIDE\s*\\P\s*(LENGTH|WIDTH|HEIGHT)|INSIDE\s+(LENGTH|WIDTH|HEIGHT)", re.I)
