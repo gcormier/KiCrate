@@ -219,3 +219,75 @@ def test_posts_board_needs_callout(tmp_path):
     for e in doc.modelspace().query("MTEXT"):
         e.text = "M4 x 0.315 LG. THREADED INSERT (4) PLACES"  # cover screws, not PCB posts
     assert extract.find_posts_boards(doc, (114.3, 63.5)) == []
+
+
+def test_save_draft_keeps_known_variants(tmp_path):
+    from kicrate import data
+    from kicrate.schema import Box3, Enclosure
+
+    def enc(variants):
+        return Enclosure(mfr="bud", part="X-1", variants=variants, series="X", provenance="scraped",
+                         outer=Box3(length=30, width=20, height=10))
+
+    assert data.save_draft(enc(["X-1-C", "X-1-DG"]), tmp_path) == "new"
+    # X-1-DG's page failed this run: it must not disappear.
+    assert data.save_draft(enc(["X-1-C"]), tmp_path) == "unchanged"
+    assert data.load_file(tmp_path / "bud" / "X-1.yaml").variants == ["X-1-C", "X-1-DG"]
+    assert data.save_draft(enc(["X-1-C", "X-1-GY"]), tmp_path) == "updated"
+    assert data.load_file(tmp_path / "bud" / "X-1.yaml").variants == ["X-1-C", "X-1-DG", "X-1-GY"]
+
+
+def test_http_retries_transient_errors(tmp_path, monkeypatch):
+    import io
+    import urllib.error
+
+    from kicrate.scrapers import http
+
+    monkeypatch.setenv("KICRATE_CACHE", str(tmp_path))
+    monkeypatch.setattr(http, "DELAY", 0)
+    monkeypatch.setattr(http, "BACKOFF", 0)
+    calls = []
+
+    class Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake(req, timeout):
+        calls.append(req.full_url)
+        if len(calls) < 3:
+            raise urllib.error.HTTPError(req.full_url, 504, "Gateway Timeout", {}, None)
+        return Resp(b"ok")
+
+    monkeypatch.setattr(http.urllib.request, "urlopen", fake)
+    assert http.get("https://example.com/flaky") == b"ok"
+    assert len(calls) == 3
+
+    calls.clear()
+
+    def not_found(req, timeout):
+        calls.append(1)
+        raise urllib.error.HTTPError(req.full_url, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(http.urllib.request, "urlopen", not_found)
+    with pytest.raises(urllib.error.HTTPError):
+        http.get("https://example.com/missing")
+    assert len(calls) == 1  # 4xx is not retried
+
+
+def test_save_draft_keeps_existing_group_name(tmp_path):
+    from kicrate import data
+    from kicrate.schema import Box3, Enclosure
+
+    def enc(part, variants):
+        return Enclosure(mfr="bud", part=part, variants=variants, series="X", provenance="scraped",
+                         outer=Box3(length=30, width=20, height=10))
+
+    # First run: X-1's own page failed, so the group was saved under X-1-C.
+    assert data.save_draft(enc("X-1-C", ["X-1-DG"]), tmp_path) == "new"
+    # Later run sees X-1 again: it folds into the existing file instead of being skipped or duplicated.
+    assert data.save_draft(enc("X-1", ["X-1-C", "X-1-DG"]), tmp_path) == "updated (into bud/X-1-C)"
+    assert sorted(p.name for p in (tmp_path / "bud").iterdir()) == ["X-1-C.yaml"]
+    assert data.load_file(tmp_path / "bud" / "X-1-C.yaml").variants == ["X-1", "X-1-DG"]
