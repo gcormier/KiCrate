@@ -321,3 +321,53 @@ def test_save_draft_keeps_existing_group_name(tmp_path):
     assert data.save_draft(enc("X-1", ["X-1-C", "X-1-DG"]), tmp_path) == "updated (into bud/X-1-C)"
     assert sorted(p.name for p in (tmp_path / "bud").iterdir()) == ["X-1-C.yaml"]
     assert data.load_file(tmp_path / "bud" / "X-1-C.yaml").variants == ["X-1", "X-1-DG"]
+
+
+def test_text_in_blocks_and_footnotes(tmp_path):
+    """Notes inside block references (AutoCAD leader notes, SolidWorks SW_NOTE) are read as one
+    note each, and a "(*)" marker pulls the screw size from its footnote."""
+    doc = ezdxf.new("R2010")
+    blk = doc.blocks.new("SW_NOTE_0")
+    blk.add_text("0.315 DIA. BOSS (*)", dxfattribs={"height": 0.1}).set_placement((0, 0.3))
+    blk.add_text("WITH 0.090 DIA. HOLES", dxfattribs={"height": 0.1}).set_placement((0, 0.15))
+    blk.add_text("(2) PLACES", dxfattribs={"height": 0.1}).set_placement((0, 0))
+    msp = doc.modelspace()
+    msp.add_blockref("SW_NOTE_0", (5, 5))
+    msp.add_text("(*) MOUNTING BOSSES USE EITHER M2.5 METRIC", dxfattribs={"height": 0.1}).set_placement((9, 9))
+    msp.add_text("OR #4 SHEET METAL SCREWS", dxfattribs={"height": 0.1}).set_placement((9, 8.85))
+    texts = [t for t, _ in extract._text_items(msp)]
+    assert "0.315 DIA. BOSS (*) WITH 0.090 DIA. HOLES (2) PLACES" in texts
+    assert "(*) MOUNTING BOSSES USE EITHER M2.5 METRIC OR #4 SHEET METAL SCREWS" in texts
+
+
+def test_labelled_pcb_view(tmp_path):
+    doc = ezdxf.new("R2010")
+    msp = doc.modelspace()
+    msp.add_lwpolyline([(0, 0), (6.732, 0), (6.732, 4.764), (0, 4.764)], close=True)  # box outline (in)
+    msp.add_lwpolyline([(10, 0), (16.26, 0), (16.26, 4.291), (10, 4.291)], close=True)  # board 159 x 109 mm
+    msp.add_circle((10.5, 0.5), 0.0886)
+    msp.add_circle((15.76, 3.791), 0.0886)
+    msp.add_text("SUGGESTED PC BOARD", dxfattribs={"height": 0.1}).set_placement((12, -0.4))
+    msp.add_text("LAYOUT", dxfattribs={"height": 0.1}).set_placement((12, -0.55))
+    path = tmp_path / "l.dxf"
+    doc.saveas(path)
+    ext = extract.find_labelled_board(extract.read_cad(path), (171, 121))
+    assert ext.outline.size == pytest.approx((159.0, 109.0), abs=0.05)
+    assert sorted(h.drill for h in ext.holes) == pytest.approx([4.5, 4.5], abs=0.01)
+    assert extract.find_labelled_board(extract.read_cad(path), (100, 60)) is None  # board must fit the box
+
+
+def test_posts_split_by_callout_count(tmp_path):
+    """Two boss kinds of the same diameter and no leader: the "(4) PLACES" count picks the ring pattern."""
+    doc = ezdxf.readfile(_posts_dxf(tmp_path).filename)
+    msp = doc.modelspace()
+    for e in msp.query("LEADER"):
+        msp.delete_entity(e)
+    for y in (-1.3, 1.3):  # two more 0.312 DIA bosses with a small pilot hole instead of an insert
+        msp.add_circle((0.55, y), 0.156)
+        msp.add_circle((0.55, y), 0.045)
+    path = tmp_path / "split.dxf"
+    doc.saveas(path)
+    found = extract.find_posts_boards(extract.read_cad(path), (114.3, 63.5))
+    assert len(found) == 1
+    assert found[0][1].hole_pattern.pitch == pytest.approx((94.0, 27.94), abs=0.05)

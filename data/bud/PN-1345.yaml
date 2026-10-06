@@ -8,18 +8,18 @@ series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1345/
 provenance: scraped
 verified: false
-last_checked: '2026-10-05'
+last_checked: '2026-10-06'
 sources:
 - url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1345/
   kind: product_page
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 - url: https://www.budind.com/wp-content/uploads/HB-PN-1345.pdf
   kind: drawing
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 - url: https://www.budind.com/wp-content/uploads/HB-PN-1345.dxf
   kind: cad
   sha256: 22deb090c50f54a10586d3c88b0db9a260abdb5a7a0c5d80c82fd66245eb4e92
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 outer:
   length: 264.922
   width: 184.912
@@ -30,5 +30,52 @@ inner:
   width: 178.816
   height: 113.792
   note: Converted from inches.
-notes:
-- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: path
+    nodes:
+    - [63.6, -33.306, 63.324, -33.996]
+    - [63.6, -5.231]
+    - [62.686, -4.234, 63.337, -4.555]
+    - [62.686, 4.234, 58.8, 0.0]
+    - [63.6, 5.231, 63.337, 4.555]
+    - [63.6, 33.306]
+    - [62.649, 34.305, 63.324, 33.996]
+    - [58.75, 38.4, 59.881, 35.573]
+    - [58.75, 42.6]
+    - [57.75, 43.6, 58.457, 43.307]
+    - [5.241, 43.6]
+    - [4.243, 42.657, 4.555, 43.327]
+    - [-4.243, 42.657, 0.0, 38.65]
+    - [-5.241, 43.6, -4.555, 43.327]
+    - [-57.75, 43.6]
+    - [-58.75, 42.6, -58.457, 43.307]
+    - [-58.75, 38.4]
+    - [-62.649, 34.305, -59.881, 35.573]
+    - [-63.6, 33.306, -63.324, 33.996]
+    - [-63.6, 5.231]
+    - [-62.686, 4.234, -63.337, 4.555]
+    - [-62.686, -4.234, -58.8, 0.0]
+    - [-63.6, -5.231, -63.337, -4.555]
+    - [-63.6, -33.306]
+    - [-62.649, -34.305, -63.324, -33.996]
+    - [-58.75, -38.4, -59.881, -35.573]
+    - [-58.75, -42.6]
+    - [-57.75, -43.6, -58.457, -43.307]
+    - [-5.241, -43.6]
+    - [-4.243, -42.657, -4.555, -43.327]
+    - [4.243, -42.657, 0.0, -38.65]
+    - [5.241, -43.6, 4.555, -43.327]
+    - [57.75, -43.6]
+    - [58.75, -42.6, 58.457, -43.307]
+    - [58.75, -38.4]
+    - [62.649, -34.305, 59.881, -35.573]
+  hole_pattern:
+    pitch: [120.5, 37.5]
+    center: [0.0, 0.0]
+    drill: 2.25
+    plated: false
+  notes:
+  - PCB outline and holes from the drawing's own labelled PCB view.

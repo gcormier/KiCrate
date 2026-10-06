@@ -70,12 +70,17 @@ def product(url: str) -> dict | None:
 
 
 def posts_mounts(blob: bytes, outer, inner, clearance: float) -> list[PcbMount]:
-    """Boards derived from the DXF's PCB posts and floor (see extract.find_posts_boards)."""
+    """The drawing's own labelled PCB view if it has one (e.g. "SUGGESTED PC BOARD LAYOUT"), else
+    boards derived from the DXF's PCB posts and floor (see extract.find_posts_boards)."""
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "drawing.dxf"
         path.write_bytes(blob)
-        found = extract.find_posts_boards(extract.read_cad(path), outer[:2], clearance=clearance,
-                                          inner_size=inner[:2] if inner else None)
+        doc = extract.read_cad(path)
+    labelled = extract.find_labelled_board(doc, outer[:2])
+    if labelled:
+        return [PcbMount(id="main", type="bosses", outline=labelled.outline, holes=labelled.holes,
+                         hole_pattern=labelled.hole_pattern, notes=labelled.notes)]
+    found = extract.find_posts_boards(doc, outer[:2], clearance=clearance, inner_size=inner[:2] if inner else None)
     return [PcbMount(id=mid, type="bosses", outline=ext.outline, holes=ext.holes, hole_pattern=ext.hole_pattern,
                      cutouts=ext.cutouts, notes=[*ext.notes, "Walls are drafted; check against a real box."]) for mid, ext in found]
 
@@ -130,6 +135,6 @@ def scrape(series_list: list[str], limit: int | None = None, log=print, clearanc
                 pcb_mounts=mounts,
                 notes=[] if mounts else ["PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help)."],
             )
-            log(f"  {enc.part} (+{len(enc.variants)} variants){f': {len(mounts)} board(s) from DXF posts' if mounts else ''}")
+            log(f"  {enc.part} (+{len(enc.variants)} variants){f': {len(mounts)} board(s) from the DXF' if mounts else ''}")
             out.append(enc)
     return out

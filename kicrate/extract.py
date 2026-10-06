@@ -209,6 +209,40 @@ def _board_from(loops: list[Loop], circles, size, scales, tol: float = TOL, digi
     return ext
 
 
+PCB_LABEL = re.compile(r"(SUGGESTED|RECOMMENDED|MAX\.?(IMUM)?)\b.{0,30}\b(PC|PCB|P\.C\.|PRINTED CIRCUIT)\s*(BOARD|LAYOUT|SIZE)", re.I)
+
+
+def find_labelled_board(doc, outer_size: tuple[float, float]) -> Extraction | None:
+    """The PCB view a drawing labels itself ("SUGGESTED PC BOARD LAYOUT", "MAX. PCB SIZE", ...):
+    the closest closed outline to the label that fits inside the box, plus its holes."""
+    msp = doc.modelspace()
+    labels = [p for t, p in _text_items(msp) if PCB_LABEL.search(t)]
+    if not labels:
+        return None
+    loops = [lp for lp in closed_loops(_segments(msp)) if not _is_round(lp)]
+    circles = [(e.dxf.center.x, e.dxf.center.y, e.dxf.radius) for e in msp.query("CIRCLE")
+               if not SKIP_LAYERS.search(e.dxf.get("layer", ""))]
+    L, W = sorted(outer_size, reverse=True)
+    best = None
+    for pos in labels:
+        for f in dict.fromkeys([25.4, 1.0, *view_scales(doc)]):
+            for lp in loops:
+                x0, y0, x1, y1 = lp.bbox
+                w, h = sorted(((x1 - x0) * f, (y1 - y0) * f), reverse=True)
+                if not (0.4 * L < w < L and 0.4 * W < h < W):  # a board fits inside the box
+                    continue
+                gap = math.dist(pos, (min(max(pos[0], x0), x1), min(max(pos[1], y0), y1)))
+                if gap * f < 0.25 * L and (best is None or gap * f < best[0]):
+                    best = (gap * f, lp, f, (w, h))
+    if not best:
+        return None
+    _, lp, f, size = best
+    ext = _board_from([lp], circles, size, [f])
+    if ext:
+        ext.notes.insert(0, "PCB outline and holes from the drawing's own labelled PCB view.")
+    return ext
+
+
 PT = 25.4 / 72  # PDF point in mm
 
 
@@ -358,15 +392,55 @@ def inside_dims(doc) -> dict[str, float]:
 # --- Boxes that publish posts but no PCB outline (e.g. Bud PN series) -------------------------
 
 BOSS_TEXT = re.compile(r"BOSS|ACCEPTS\b.*\bSCREW", re.I)  # Bud: "... BOSS WITH M3 ...", Hammond: "ACCEPTS #4 ... SCREW"
+PLACES = re.compile(r"\((\d+)\)\s*PLACES|\((\d+)\s*X\)", re.I)
+FOOTNOTE = re.compile(r"^(\(\*+\)|\*+)\s")
+FOOTNOTE_REF = re.compile(r"(\(\*+\))")
 THREAD = re.compile(r"\b(M\d+(?:\.\d+)?)\b|(#\d+)")
 # Clearance hole for each thread (ISO 273 medium / common practice), mm.
 CLEARANCE_HOLE = {"M2": 2.2, "M2.5": 2.7, "M3": 3.2, "M4": 4.3, "M5": 5.3, "#2": 2.7, "#4": 3.2, "#6": 3.5, "#8": 4.3}
 
 
 def _text_items(msp):
-    for e in msp.query("MTEXT TEXT"):
-        t = e.plain_text() if e.dxftype() == "MTEXT" else e.dxf.text
-        yield " ".join(t.split()), (e.dxf.insert.x, e.dxf.insert.y)
+    """Notes as (text, position). A block reference (AutoCAD leader notes, SolidWorks SW_NOTE
+    blocks) is one note; loose single-line TEXT stacked into a paragraph is joined."""
+
+    def plain(e):
+        return " ".join((e.plain_text() if e.dxftype() == "MTEXT" else e.dxf.text).split())
+
+    def flat(entities, depth=0):
+        for e in entities:
+            if e.dxftype() in ("MTEXT", "TEXT"):
+                yield e
+            elif e.dxftype() == "INSERT" and depth < 4:
+                try:
+                    yield from flat(e.virtual_entities(), depth + 1)
+                except Exception:  # noqa: BLE001 - unusual block transforms: skip the block
+                    pass
+
+    loose = []
+    for e in msp:
+        if e.dxftype() == "INSERT":
+            parts = [x for x in flat([e]) if plain(x)]
+            if parts:
+                top = max(parts, key=lambda x: x.dxf.insert.y)
+                yield " ".join(plain(x) for x in parts), (top.dxf.insert.x, top.dxf.insert.y)
+        elif e.dxftype() == "MTEXT":
+            yield plain(e), (e.dxf.insert.x, e.dxf.insert.y)
+        elif e.dxftype() == "TEXT" and plain(e):
+            loose.append(e)
+    # Paragraphs drafted as one TEXT per line: same left edge, line pitch under ~2 text heights.
+    loose.sort(key=lambda e: (round(e.dxf.insert.x, 3), -e.dxf.insert.y))
+    para = []
+    for e in loose + [None]:
+        if para and e is not None:
+            last = para[-1]
+            h = max(last.dxf.height, e.dxf.height)
+            if abs(e.dxf.insert.x - last.dxf.insert.x) < 0.2 * h and 0 < last.dxf.insert.y - e.dxf.insert.y < 2.2 * h:
+                para.append(e)
+                continue
+        if para:
+            yield " ".join(plain(x) for x in para), (para[0].dxf.insert.x, para[0].dxf.insert.y)
+        para = [e] if e is not None else []
 
 
 def _continuous(e, doc) -> bool:
@@ -425,7 +499,18 @@ def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2
     from shapely.ops import unary_union
 
     msp = doc.modelspace()
-    callouts = [(t, p) for t, p in _text_items(msp) if BOSS_TEXT.search(t) and THREAD.search(t)]
+    texts = list(_text_items(msp))
+    # Footnotes: "BOSS (*) WITH ..." takes its screw size from the note starting "(*) ...".
+    footnotes = {m.group(1): t for t, _ in texts if (m := FOOTNOTE.match(t))}
+    callouts = []
+    for t, p in texts:
+        if FOOTNOTE.match(t) or not BOSS_TEXT.search(t):
+            continue
+        for mark in FOOTNOTE_REF.findall(t):
+            if mark in footnotes and not THREAD.search(t):
+                t = f"{t} {footnotes[mark]}"
+        if THREAD.search(t):
+            callouts.append((t, p))
     if not callouts:
         return []
     circles = [(e.dxf.center.x, e.dxf.center.y, e.dxf.radius) for e in msp.query("CIRCLE")
@@ -481,12 +566,25 @@ def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2
                 dias = [float(d) for d in DIA.findall(text)]
                 tol = 0.004 if f == 25.4 else 0.1
                 posts = sorted({(round(x, 4), round(y, 4)) for x, y, r in inside if any(abs(2 * r - d) < tol for d in dias)})
+                # Several boss kinds can share a diameter: keep the ring pattern the callout counts.
+                count = PLACES.search(text)
+                if count and len(posts) > int(count.group(1) or count.group(2)):
+                    n_want = int(count.group(1) or count.group(2))
+                    groups: dict = {}
+                    for pt in posts:
+                        groups.setdefault(ring_set(pt), []).append(pt)
+                    exact = [g for g in groups.values() if len(g) == n_want]
+                    posts = exact[0] if len(exact) == 1 else posts
             if posts and (best is None or len(posts) > len(best[2])):
                 best = (lp, f, posts)
         if not best:
             continue
         lp, f, posts = best
         ext = _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size, cap_on_posts)
+        if ext and inner_size and not cap_on_posts:
+            xs, ys = [p[0] for p in ext.outline.points], [p[1] for p in ext.outline.points]
+            if max(xs) - min(xs) > max(inner_size) + 0.01 or max(ys) - min(ys) > min(inner_size) + 0.01:
+                continue  # posts outside the floor (lid/cover bosses), not PCB posts
         if ext:
             thread = THREAD.search(text)
             screw = thread.group(1) or thread.group(2)

@@ -8,18 +8,18 @@ series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1342/
 provenance: scraped
 verified: false
-last_checked: '2026-10-05'
+last_checked: '2026-10-06'
 sources:
 - url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1342/
   kind: product_page
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1342.pdf
   kind: drawing
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1342.dxf
   kind: cad
   sha256: fc8de999ae3c7789bc252612c5e621b3e22d40c000842d019e33bb2db6ee9e4e
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 outer:
   length: 299.974
   width: 230.124
@@ -30,5 +30,141 @@ inner:
   width: 222.504
   height: 79.502
   note: Converted from inches.
-notes:
-- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: polygon
+    points:
+    - [-135.31, -99.04]
+    - [-135.21, -109.25]
+    - [-8.09, -109.25]
+    - [-7.69, -106.16]
+    - [-7.02, -104.49]
+    - [-5.9, -102.92]
+    - [-4.64, -101.8]
+    - [-2.95, -100.88]
+    - [-1.08, -100.39]
+    - [0.72, -100.35]
+    - [3.06, -100.93]
+    - [4.64, -101.8]
+    - [6.06, -103.1]
+    - [7.02, -104.49]
+    - [7.73, -106.27]
+    - [8.09, -109.25]
+    - [135.21, -109.25]
+    - [135.32, -99.01]
+    - [135.55, -97.17]
+    - [136.19, -95.41]
+    - [137.29, -93.76]
+    - [138.55, -92.54]
+    - [139.94, -91.67]
+    - [141.7, -91.02]
+    - [144.3, -90.65]
+    - [144.3, 90.65]
+    - [141.7, 91.02]
+    - [139.94, 91.67]
+    - [138.55, 92.54]
+    - [137.29, 93.76]
+    - [136.19, 95.41]
+    - [135.55, 97.17]
+    - [135.31, 99.04]
+    - [135.21, 109.25]
+    - [8.09, 109.25]
+    - [7.69, 106.16]
+    - [7.02, 104.49]
+    - [5.9, 102.92]
+    - [4.64, 101.8]
+    - [2.95, 100.88]
+    - [1.08, 100.39]
+    - [-0.72, 100.35]
+    - [-3.06, 100.93]
+    - [-4.64, 101.8]
+    - [-6.06, 103.1]
+    - [-7.02, 104.49]
+    - [-7.73, 106.27]
+    - [-8.09, 109.25]
+    - [-135.21, 109.25]
+    - [-135.32, 99.01]
+    - [-135.55, 97.17]
+    - [-136.19, 95.41]
+    - [-137.29, 93.76]
+    - [-138.55, 92.54]
+    - [-139.94, 91.67]
+    - [-141.7, 91.02]
+    - [-144.3, 90.65]
+    - [-144.3, -90.65]
+    - [-141.59, -91.06]
+    - [-139.94, -91.66]
+    - [-138.37, -92.68]
+    - [-137.07, -94.02]
+    - [-136.09, -95.62]
+    - [-135.5, -97.39]
+  holes:
+  - at: [127.25, -99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [42.49, -99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [-42.49, -99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [-127.25, -99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [137.74, -0.0]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [42.49, -0.0]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [-42.49, -0.0]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [-137.74, -0.0]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [127.25, 99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [42.49, 99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [-42.49, 99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  - at: [-127.25, 99.01]
+    drill: 3.2
+    boss_diameter: 8.0
+    screw: M3
+    plated: false
+  notes:
+  - 'Posts from the drawing callout: "0.315 DIA. BOSS WITH 0.120 DIA. HOLE x 0.320 DEEP (12) PLACES MOUNTING BOSSES USE EITHER
+    M3 METRIC OR #6 STD. SHEET METAL SCREWS x 0.312 LG. (NOT SUPPLIED)".'
+  - Outline is the enclosed floor in the drawing shrunk by 2 mm from walls, ribs and other bosses, capped at the stated inside
+    size; it always covers its posts (KiCrate-derived, not a manufacturer outline).
+  - PCB hole 3.2 mm is the clearance for M3.
+  - Walls are drafted; check against a real box.
