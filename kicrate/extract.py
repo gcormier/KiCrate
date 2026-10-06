@@ -357,7 +357,7 @@ def inside_dims(doc) -> dict[str, float]:
 
 # --- Boxes that publish posts but no PCB outline (e.g. Bud PN series) -------------------------
 
-BOSS_TEXT = re.compile(r"BOSS", re.I)
+BOSS_TEXT = re.compile(r"BOSS|ACCEPTS\b.*\bSCREW", re.I)  # Bud: "... BOSS WITH M3 ...", Hammond: "ACCEPTS #4 ... SCREW"
 THREAD = re.compile(r"\b(M\d+(?:\.\d+)?)\b|(#\d+)")
 # Clearance hole for each thread (ISO 273 medium / common practice), mm.
 CLEARANCE_HOLE = {"M2": 2.2, "M2.5": 2.7, "M3": 3.2, "M4": 4.3, "M5": 5.3, "#2": 2.7, "#4": 3.2, "#6": 3.5, "#8": 4.3}
@@ -411,14 +411,15 @@ DIA = re.compile(r"(\d*\.\d+|\d+)\s*DIA", re.I)
 
 
 def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2.0,
-                      inner_size: tuple[float, float] | None = None) -> list[tuple[str, Extraction]]:
+                      inner_size: tuple[float, float] | None = None, cap_on_posts: bool = False) -> list[tuple[str, Extraction]]:
     """Boards for boxes whose drawing shows PCB posts ("... BOSS WITH M3 ...") but no outline.
 
     One result per post callout, as (id, Extraction). The body (top) view is the closed outline
     matching `outer_size` (mm; the drawing may be in inches). Posts are the circle groups the
     callout's leader points at, or else whose diameter the callout states. The board is the
     enclosed floor shrunk by `clearance` from walls, ribs and other bosses, capped at
-    `inner_size` minus the clearance, and always covering its posts.
+    `inner_size` minus the clearance (centred on the posts with `cap_on_posts`, else on the
+    floor), and always covering its posts.
     """
     from shapely.geometry import Point, Polygon, box
     from shapely.ops import unary_union
@@ -445,6 +446,19 @@ def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2
                 views.append((lp, f))
         if views:
             break
+    # Views drawn with splines/ellipses don't form line/arc loops: also accept a connected cluster
+    # of solid linework of the right size around each callout's leader tip.
+    for f in (25.4, 1.0):
+        if any(vf == f for _, vf in views):
+            continue
+        for _, tpos in callouts:
+            if not leaders:
+                break
+            leader = min(leaders, key=lambda vs: min(math.dist(vs[-1], tpos), math.dist(vs[0], tpos)))
+            tip = leader[0] if math.dist(leader[-1], tpos) <= math.dist(leader[0], tpos) else leader[-1]
+            view = _cluster_view(msp, tip, want, f)
+            if view and all(v[0].bbox != view.bbox for v in views):
+                views.append((view, f))
     if not views:
         return []
 
@@ -472,16 +486,39 @@ def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2
         if not best:
             continue
         lp, f, posts = best
-        ext = _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size)
+        ext = _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size, cap_on_posts)
         if ext:
             thread = THREAD.search(text)
             screw = thread.group(1) or thread.group(2)
             kind = "inserts" if "INSERT" in text.upper() else "bosses"
-            results.append((f"{screw.lower().replace('#', 'no').replace('.', '_')}_{kind}" if len(callouts) > 1 else "main", ext))
+            mid = f"{screw.lower().replace('#', 'no').replace('.', '_')}_{kind}" if len(callouts) > 1 else "main"
+            while mid in {m for m, _ in results}:
+                mid += "_2"
+            results.append((mid, ext))
     return results
 
 
-def _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size):
+def _cluster_view(msp, tip, want, f) -> "Loop | None":
+    """Bounding box of the connected solid linework around `tip`, if it has the box's outer size."""
+    from shapely.geometry import Point, box
+    from shapely.ops import unary_union
+
+    reach = 1.5 * want[0] / f
+    window = box(tip[0] - reach, tip[1] - reach, tip[0] + reach, tip[1] + reach)
+    eps = 0.15 / f  # bridge small drafting gaps (~0.15 mm)
+    blobs = unary_union([g.buffer(eps) for g in _linework(msp, window)])
+    for g in getattr(blobs, "geoms", [blobs]):
+        x0, y0, x1, y1 = g.bounds
+        w, h = (x1 - x0 - 2 * eps) * f, (y1 - y0 - 2 * eps) * f
+        if abs(max(w, h) - want[0]) < 0.03 * want[0] and abs(min(w, h) - want[1]) < 0.03 * want[1] \
+                and box(*g.bounds).contains(Point(tip)):
+            x0, y0, x1, y1 = x0 + eps, y0 + eps, x1 - eps, y1 - eps
+            pts = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+            return Loop([Seg(pts[i - 1], pts[i]) for i in range(4)], pts)
+    return None
+
+
+def _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size, cap_on_posts=False):
     from shapely.geometry import Point, Polygon, box
     from shapely.ops import unary_union
 
@@ -511,9 +548,11 @@ def _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size):
     board = area.buffer(-cl, quad_segs=4, join_style="round")
     if islands:
         board = board.difference(unary_union(islands).buffer(cl, quad_segs=4))
-    if inner_size:  # stated inside size is at the floor/between ribs; walls are drafted
+    if inner_size:  # a size cap: the stated inside size (walls are drafted), or a max PCB size centred on the posts
         fx0, fy0, fx1, fy1 = floor.bounds
         cx, cy = (fx0 + fx1) / 2, (fy0 + fy1) / 2
+        if cap_on_posts:
+            cx, cy = sum(p[0] for p in posts) / len(posts), sum(p[1] for p in posts) / len(posts)
         L, W = sorted(inner_size, reverse=True)
         a, b = (L / f / 2 - cl, W / f / 2 - cl)
         if (fy1 - fy0) > (fx1 - fx0):

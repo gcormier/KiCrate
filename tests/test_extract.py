@@ -214,6 +214,36 @@ def test_posts_board(tmp_path, clearance):
     assert min(ys) > -(1.1 * 25.4) + clearance - 0.15
 
 
+def test_posts_board_spline_view_hammond_callout(tmp_path):
+    """Hammond 1593Q style: a mm drawing whose body view is splines (no line/arc loop), posts
+    called out as "ACCEPTS #4 ... SCREW", board capped at a max PCB size centred on the posts."""
+    doc = ezdxf.new("R2010")
+    msp = doc.modelspace()
+    msp.add_open_spline([(-56, -33), (56, -33), (56, 33), (-56, 33), (-56, -33)], degree=1)  # outer 112 x 66
+    msp.add_open_spline([(-53, -30), (53, -30), (53, 30), (-53, 30), (-53, -30)], degree=1)  # floor 106 x 60
+    for x in (-14, 30):
+        for y in (-14, 14):
+            msp.add_circle((x, y), 2.45)
+            msp.add_circle((x, y), 1.2)
+    msp.add_mtext("ACCEPTS #4 SELF-TAPPING SCREW (4) PLACES").set_location((40, -45))
+    msp.add_leader([(30 - 2.45, -14), (30, -45), (40, -45)])
+    path = tmp_path / "q.dxf"
+    doc.saveas(path)
+    found = extract.find_posts_boards(extract.read_cad(path), (112, 66), clearance=2.0,
+                                      inner_size=(64, 50), cap_on_posts=True)
+    assert len(found) == 1
+    ext = found[0][1]
+    assert ext.hole_pattern.drill == 3.2 and ext.hole_pattern.screw == "#4"
+    assert ext.hole_pattern.pitch == pytest.approx((44, 28), abs=0.05)
+    xs = [p[0] for p in ext.outline.points]
+    ys = [p[1] for p in ext.outline.points]
+    assert max(xs) - min(xs) == pytest.approx(60, abs=0.15) and max(ys) - min(ys) == pytest.approx(46, abs=0.15)
+    # Centred on the posts, which sit off-centre in the box: equal margin each side of the holes.
+    hp = ext.hole_pattern
+    hx = (hp.center[0] - hp.pitch[0] / 2, hp.center[0] + hp.pitch[0] / 2)
+    assert hx[0] - min(xs) == pytest.approx(max(xs) - hx[1], abs=0.15)
+
+
 def test_posts_board_needs_callout(tmp_path):
     doc = _posts_dxf(tmp_path)
     for e in doc.modelspace().query("MTEXT"):

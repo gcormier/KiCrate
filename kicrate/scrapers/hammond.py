@@ -91,7 +91,7 @@ def build_entry(series: str, pages: list[PartPage], today: dt.date) -> Enclosure
     a = rep.attrs
     notes: list[str] = []
     sources = [Source(url=f"{BASE}/part/{rep.pn}", kind="product_page", retrieved=today)]
-    ext = inner = None
+    ext = inner = doc = None
     if "dxf" in rep.files:
         blob = get(rep.files["dxf"])
         sources.append(Source(url=rep.files["dxf"], kind="cad", sha256=hashlib.sha256(blob).hexdigest(), retrieved=today))
@@ -125,17 +125,54 @@ def build_entry(series: str, pages: list[PartPage], today: dt.date) -> Enclosure
                 notes.append(f"PDF extraction failed: {e}")
         sources.insert(1, drawing)
 
+    cutouts, from_posts = [], False
+    if not ext and doc is not None:
+        # No PCB outline anywhere: derive one from the posts the drawing calls out ("ACCEPTS #4 ...
+        # SCREW"), capped at Hammond's max PCB size; keep the candidate closest to that size.
+        cl = 2.0
+        try:
+            # Pick the mounting option by its natural size (Hammond uses the same "ACCEPTS #4" wording for
+            # cover-screw bosses), then cap the chosen one at the max PCB size.
+            natural = extract.find_posts_boards(doc, size[:2], clearance=cl)
+            capped = dict(extract.find_posts_boards(doc, size[:2], clearance=cl, inner_size=(max(pcb) + 2 * cl, min(pcb) + 2 * cl), cap_on_posts=True))
+        except Exception as e:  # noqa: BLE001
+            natural, capped = [], {}
+            notes.append(f"Post analysis failed: {e}")
+
+        def holes_on_board(e):
+            from shapely.geometry import Point, Polygon
+
+            board = Polygon(e.outline.points, [c.points for c in e.cutouts])
+            hs = e.hole_pattern.holes() if e.hole_pattern else e.holes
+            return all(board.contains(Point(h.at)) for h in hs)
+
+        def size_gap(e):
+            xs = [p[0] for p in e.outline.points]
+            ys = [p[1] for p in e.outline.points]
+            return abs((max(xs) - min(xs)) * (max(ys) - min(ys)) - pcb[0] * pcb[1])
+
+        ranked = sorted((size_gap(e), mid) for mid, e in natural)
+        for _, mid in ranked:
+            if mid in capped and holes_on_board(capped[mid]):
+                ext = capped[mid]
+                cutouts, from_posts = ext.cutouts, True
+                break
+
     if ext:
         outline, holes, pattern = ext.outline, ext.holes, ext.hole_pattern
-        src = "PDF drawing" if from_pdf else "DWG"
-        notes = [f"Outline and holes extracted from the manufacturer {src}.", *ext.notes, *notes]
+        if from_posts:
+            lead = "No PCB outline published: board derived from the DWG's PCB posts, capped at Hammond's max PCB size."
+        else:
+            lead = f"Outline and holes extracted from the manufacturer {'PDF drawing' if from_pdf else 'DWG'}."
+        notes = [lead, *ext.notes, *notes]
     else:
         outline = RectOutline(size=(max(pcb), min(pcb)))
         holes, pattern = [], None
         notes = ["Outline is the max PCB size from Hammond part attributes; no PCB view found in the DWG or PDF. "
                  "Mounting holes, bosses and notches still need to be added.", *notes]
 
-    mount = PcbMount(id="main", type=SERIES.get(series, "bosses"), outline=outline, holes=holes, hole_pattern=pattern, notes=notes)
+    mount = PcbMount(id="main", type=SERIES.get(series, "bosses"), outline=outline, holes=holes, hole_pattern=pattern,
+                     cutouts=cutouts, notes=notes)
     enc = Enclosure(
         mfr="hammond",
         part=rep.pn,
