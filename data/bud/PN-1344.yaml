@@ -8,18 +8,18 @@ series: PN
 url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1344/
 provenance: scraped
 verified: false
-last_checked: '2026-10-05'
+last_checked: '2026-10-06'
 sources:
 - url: https://www.budind.com/product/nema-ip-rated-boxes/pn-series-nema-box/ip65-nema-4x-box-pn-1344/
   kind: product_page
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1344.pdf
   kind: drawing
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 - url: https://www.budind.com/wp-content/uploads/2019/01/hb1344.dxf
   kind: cad
   sha256: 829647cb0f44c35dc21b5c736b9f200def1e6b872cf0b208a4c4e0bcc78f3c72
-  retrieved: '2026-10-05'
+  retrieved: '2026-10-06'
 outer:
   length: 359.918
   width: 199.898
@@ -30,5 +30,222 @@ inner:
   width: 189.23
   height: 142.748
   note: Converted from inches.
-notes:
-- 'PCB mounting geometry not entered yet: see the drawing/DXF (kicrate extract can help).'
+pcb_mounts:
+- id: main
+  type: bosses
+  outline:
+    shape: polygon
+    points:
+    - [8.99, -83.22]
+    - [10.13, -85.23]
+    - [10.78, -87.23]
+    - [11.04, -89.52]
+    - [11.11, -92.61]
+    - [158.84, -92.61]
+    - [158.91, -76.93]
+    - [159.19, -74.73]
+    - [159.94, -72.65]
+    - [161.01, -70.95]
+    - [162.48, -69.44]
+    - [164.63, -68.06]
+    - [166.85, -67.34]
+    - [168.74, -67.13]
+    - [171.98, -67.13]
+    - [172.63, -66.97]
+    - [172.63, 66.97]
+    - [171.97, 67.13]
+    - [168.71, 67.13]
+    - [166.85, 67.34]
+    - [164.63, 68.06]
+    - [162.48, 69.44]
+    - [161.01, 70.95]
+    - [159.94, 72.65]
+    - [159.19, 74.73]
+    - [158.91, 76.95]
+    - [158.84, 92.62]
+    - [11.11, 92.62]
+    - [11.04, 89.51]
+    - [10.78, 87.23]
+    - [10.04, 85.04]
+    - [8.8, 82.97]
+    - [7.31, 81.35]
+    - [5.33, 79.97]
+    - [3.51, 79.16]
+    - [1.36, 78.68]
+    - [-0.94, 78.63]
+    - [-3.31, 79.09]
+    - [-5.43, 80.01]
+    - [-7.31, 81.35]
+    - [-8.87, 83.05]
+    - [-10.04, 85.04]
+    - [-10.78, 87.23]
+    - [-11.04, 89.52]
+    - [-11.11, 92.62]
+    - [-158.84, 92.62]
+    - [-158.91, 76.93]
+    - [-159.19, 74.73]
+    - [-159.94, 72.65]
+    - [-161.01, 70.95]
+    - [-162.48, 69.44]
+    - [-164.63, 68.06]
+    - [-166.85, 67.34]
+    - [-168.74, 67.13]
+    - [-171.98, 67.13]
+    - [-172.62, 66.97]
+    - [-172.62, -66.97]
+    - [-171.97, -67.13]
+    - [-168.71, -67.13]
+    - [-166.85, -67.34]
+    - [-164.63, -68.06]
+    - [-162.48, -69.44]
+    - [-161.01, -70.95]
+    - [-159.94, -72.65]
+    - [-159.19, -74.73]
+    - [-158.91, -76.95]
+    - [-158.84, -92.61]
+    - [-11.11, -92.61]
+    - [-11.04, -89.51]
+    - [-10.82, -87.43]
+    - [-10.04, -85.04]
+    - [-8.99, -83.22]
+    - [-7.54, -81.57]
+    - [-5.33, -79.97]
+    - [-3.31, -79.09]
+    - [-1.05, -78.63]
+    - [1.05, -78.63]
+    - [3.21, -79.07]
+    - [5.7, -80.18]
+    - [7.46, -81.49]
+  holes:
+  - at: [150.15, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [124.97, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [84.96, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [44.96, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-44.96, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-84.96, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-124.97, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-150.15, -85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [164.67, -40.0]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-0.0, -40.0]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-164.67, -40.0]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [164.67, 0.0]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-0.0, 0.0]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-164.67, 0.0]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [164.67, 40.01]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-0.0, 40.01]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-164.67, 40.01]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [150.15, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [124.97, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [84.96, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [44.96, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-44.96, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-84.96, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-124.97, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  - at: [-150.15, 85.99]
+    drill: 5.3
+    boss_diameter: 9.91
+    screw: M5
+    plated: false
+  notes:
+  - 'Posts from the drawing callout: "0.390 DIA. BOSS WITH 0.190 DIA. HOLE x 0.435 DEEP (25) PLACES MOUNTING BOSSES USE EITHER
+    M5 METRIC OR #12 STD. SHEET METAL SCREWS x 0.312 LG. (NOT SUPPLIED)".'
+  - Outline is the enclosed floor in the drawing shrunk by 2 mm from walls, ribs and other bosses, capped at the stated inside
+    size; it always covers its posts (KiCrate-derived, not a manufacturer outline).
+  - PCB hole 5.3 mm is the clearance for M5.
+  - Walls are drafted; check against a real box.

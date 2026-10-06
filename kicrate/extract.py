@@ -581,6 +581,10 @@ def find_posts_boards(doc, outer_size: tuple[float, float], clearance: float = 2
             continue
         lp, f, posts = best
         ext = _board_over_posts(msp, lp, f, posts, ring_set, text, clearance, inner_size, cap_on_posts)
+        if ext and inner_size and not cap_on_posts:
+            xs, ys = [p[0] for p in ext.outline.points], [p[1] for p in ext.outline.points]
+            if max(xs) - min(xs) > max(inner_size) + 0.01 or max(ys) - min(ys) > min(inner_size) + 0.01:
+                continue  # posts outside the floor (lid/cover bosses), not PCB posts
         if ext:
             thread = THREAD.search(text)
             screw = thread.group(1) or thread.group(2)
